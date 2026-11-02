@@ -15,7 +15,7 @@ export default function Footer() {
     <footer className="mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
         <div>
-          <Logo />
+          <Logo height={22} />
           <p className="mt-1 text-sm text-ink-2">{site.tagline}. Cash on delivery all over Lebanon.</p>
         </div>
         <div className="text-sm">
