@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import Logo from "@/components/Logo";
 import { categoryTree, getCategories, getProducts } from "@/lib/data";
 import { site } from "@/lib/site";
 
@@ -10,15 +11,23 @@ export default async function Home() {
   const top = cats.filter((c) => !c.parent_id);
   return (
     <>
-      <section className="layers -mx-4 mt-6 rounded-3xl border border-line bg-surface px-6 py-12 sm:mx-0 sm:px-10 sm:py-16">
-        <p className="text-sm font-semibold uppercase tracking-widest text-accent">{site.tagline}</p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Sports gear, everyday tools and Lebanese souvenirs, printed layer by layer.
-        </h1>
-        <p className="mt-4 max-w-xl text-ink-2">Order online and pay cash when it arrives. Delivery all over Lebanon.</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={`/c/${top[0]?.slug ?? ""}`} className="btn btn-primary">Shop now</Link>
-          <Link href="/custom" className="btn">Request a custom print</Link>
+      <section className="hero-dark -mx-4 mt-6 overflow-hidden rounded-3xl border border-line bg-[#283189] px-6 py-12 text-white sm:mx-0 sm:px-12 sm:py-16">
+        <div className="flex items-center justify-between gap-8">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#ff8a52]">{site.tagline}</p>
+            <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">
+              Sports gear, everyday tools and Lebanese souvenirs, <span className="highlight">built layer by layer.</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-[#dfe1f5]">Order online and pay cash when it arrives. Delivery all over Lebanon.</p>
+            <p lang="ar" dir="rtl" className="mt-2 w-fit text-[#dfe1f5]" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
+              اطلب أونلاين واِدفع عند الاستلام
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href={`/c/${top[0]?.slug ?? ""}`} className="btn btn-pink">Shop now</Link>
+              <Link href="/custom" className="btn btn-ghost-dark">Request a custom print</Link>
+            </div>
+          </div>
+          <div className="hidden shrink-0 lg:block"><Logo height={52} onDark /></div>
         </div>
       </section>
 
