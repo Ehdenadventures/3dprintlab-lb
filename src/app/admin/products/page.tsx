@@ -27,7 +27,7 @@ export default async function ProductsAdmin() {
         <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-surface">
           <table className="w-full text-sm">
             <thead className="bg-surface-2 text-left text-xs uppercase tracking-wide text-ink-3">
-              <tr><th className="p-3">Product</th><th className="p-3">Category</th><th className="p-3 text-right">Price</th><th className="p-3">Media</th><th className="p-3">Status</th></tr>
+              <tr><th className="p-3">Product</th><th className="p-3">Category</th><th className="p-3 text-right">Price</th><th className="p-3 text-right">Stock</th><th className="p-3">Media</th><th className="p-3">Status</th></tr>
             </thead>
             <tbody className="divide-y divide-line">
               {sorted.map((p) => (
@@ -35,6 +35,11 @@ export default async function ProductsAdmin() {
                   <td className="p-3 font-semibold"><Link href={`/admin/products/${p.id}`} className="hover:underline">{p.name}</Link></td>
                   <td className="p-3 text-ink-2">{label(p.category_id)}</td>
                   <td className="p-3 text-right">{money(p.price)}</td>
+                  <td className="p-3 text-right">
+                    {p.stock === null ? <span className="text-ink-3">No limit</span>
+                      : p.stock === 0 ? <span className="font-semibold text-bad">Sold out</span>
+                      : <span className={p.stock <= 3 ? "font-semibold text-[#c44a16] dark:text-pink" : ""}>{p.stock}</span>}
+                  </td>
                   <td className="p-3 text-ink-2">{p.media.length || <span className="text-bad">none</span>}</td>
                   <td className="p-3">{p.active ? "Live" : <span className="text-ink-3">Hidden</span>}</td>
                 </tr>

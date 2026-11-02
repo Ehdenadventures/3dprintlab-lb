@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
 
-type Props = { productId: string; slug: string; name: string; price: number; image?: string; personalizable: boolean };
+type Props = { productId: string; slug: string; name: string; price: number; image?: string; personalizable: boolean; max?: number };
 
 export default function AddToCart(p: Props) {
   const { add } = useCart();
@@ -25,7 +25,7 @@ export default function AddToCart(p: Props) {
         <div className="flex items-center rounded-xl border border-line bg-surface">
           <button className="px-3 py-2 text-lg" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Fewer">−</button>
           <span className="w-8 text-center font-semibold" aria-live="polite">{qty}</span>
-          <button className="px-3 py-2 text-lg" onClick={() => setQty((q) => Math.min(99, q + 1))} aria-label="More">+</button>
+          <button className="px-3 py-2 text-lg" onClick={() => setQty((q) => Math.min(Math.min(99, p.max ?? 99), q + 1))} aria-label="More">+</button>
         </div>
         <button
           className="btn btn-primary flex-1"

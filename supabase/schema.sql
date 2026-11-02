@@ -25,6 +25,8 @@ create table if not exists products (
   active boolean not null default true,
   personalizable boolean not null default false,
   sort int not null default 0,
+  -- how many are ready to sell; null = no limit (made to order)
+  stock int check (stock is null or stock >= 0),
   -- list of {"type": "image" | "video", "url": "..."}; the first image is the cover
   media jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()
@@ -66,3 +68,5 @@ alter table orders enable row level security;
 insert into storage.buckets (id, name, public)
 values ('media', 'media', true)
 on conflict (id) do nothing;
+
+-- Stock functions (take_stock / return_stock) live in migrations/002_stock.sql; run it after this file.

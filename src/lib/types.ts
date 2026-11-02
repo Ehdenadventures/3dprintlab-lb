@@ -20,6 +20,8 @@ export type Product = {
   active: boolean;
   personalizable: boolean;
   sort: number;
+  /** How many are ready to sell. null = no limit (made to order). */
+  stock: number | null;
   media: Media[];
 };
 

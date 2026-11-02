@@ -32,6 +32,7 @@ function demo(): Demo {
       active: p.active,
       personalizable: p.personalizable,
       sort: p.sort,
+      stock: null,
       media: [],
     }));
     g.__demo = { categories, products, orders: [] };
@@ -41,7 +42,11 @@ function demo(): Demo {
 
 export const isDemo = () => db() === null;
 
-const num = <T extends { price?: unknown }>(r: T) => ({ ...r, price: Number(r.price) });
+const num = <T extends { price?: unknown; stock?: unknown }>(r: T) => ({
+  ...r,
+  price: Number(r.price),
+  stock: r.stock == null ? null : Number(r.stock),
+});
 const bySort = <T extends { sort: number; name: string }>(a: T, b: T) => a.sort - b.sort || a.name.localeCompare(b.name);
 
 function fail(error: { message: string } | null) {
@@ -156,6 +161,58 @@ export function categoryTree(categories: Category[], rootId: string): Set<string
       }
   }
   return ids;
+}
+
+/* ---------------- stock ---------------- */
+
+export class OutOfStockError extends Error {
+  constructor(public productName: string, public left: number) {
+    super(`Only ${left} left of "${productName}"`);
+  }
+}
+
+type StockLine = Pick<OrderItem, "product_id" | "name" | "qty">;
+// If the stock SQL (supabase/migrations/002_stock.sql) hasn't been run yet, skip stock instead of blocking orders.
+const missingFn = (e: { code?: string; message: string }) => e.code === "PGRST202" || /could not find the function/i.test(e.message);
+const stockPayload = (items: StockLine[]) => items.map(({ product_id, name, qty }) => ({ product_id, name, qty }));
+
+/** Takes stock for a whole order at once. Throws OutOfStockError (and changes nothing) if anything is short. */
+export async function takeStock(items: StockLine[]) {
+  const s = db();
+  if (!s) {
+    const d = demo();
+    const need = new Map<string, number>();
+    for (const i of items) need.set(i.product_id, (need.get(i.product_id) ?? 0) + i.qty);
+    for (const [id, qty] of need) {
+      const p = d.products.find((x) => x.id === id);
+      if (p && p.stock !== null && p.stock < qty) throw new OutOfStockError(p.name, p.stock);
+    }
+    for (const [id, qty] of need) {
+      const p = d.products.find((x) => x.id === id);
+      if (p && p.stock !== null) p.stock -= qty;
+    }
+    return;
+  }
+  const { error } = await s.rpc("take_stock", { p_items: stockPayload(items) });
+  if (error && !missingFn(error)) {
+    const m = /OUT_OF_STOCK\|(.*)\|(\d+)/.exec(error.message);
+    if (m) throw new OutOfStockError(m[1], Number(m[2]));
+    throw new Error(error.message);
+  }
+}
+
+/** Puts stock back (cancelled order, or an order that failed to save). */
+export async function returnStock(items: StockLine[]) {
+  const s = db();
+  if (!s) {
+    for (const i of items) {
+      const p = demo().products.find((x) => x.id === i.product_id);
+      if (p && p.stock !== null) p.stock += i.qty;
+    }
+    return;
+  }
+  const { error } = await s.rpc("return_stock", { p_items: stockPayload(items) });
+  if (error && !missingFn(error)) fail(error);
 }
 
 /* ---------------- orders ---------------- */
