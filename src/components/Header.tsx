@@ -2,15 +2,15 @@ import Link from "next/link";
 import { getCategories } from "@/lib/data";
 import { site } from "@/lib/site";
 import CartButton from "./CartButton";
+import Logo from "./Logo";
 
 export default async function Header() {
   const top = (await getCategories()).filter((c) => !c.parent_id);
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
-          <span className="layers inline-block h-7 w-7 rounded-md border border-line" aria-hidden />
-          <span className="text-lg">{site.name}</span>
+        <Link href="/" aria-label={`${site.name} home`}>
+          <Logo />
         </Link>
         <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Categories">
           {top.map((c) => (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site, whatsappLink } from "@/lib/site";
+import Logo from "./Logo";
 import { FacebookIcon, InstagramIcon, TikTokIcon, WhatsAppIcon } from "./Icons";
 
 export default function Footer() {
@@ -14,7 +15,7 @@ export default function Footer() {
     <footer className="mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
         <div>
-          <p className="font-extrabold">{site.name}</p>
+          <Logo />
           <p className="mt-1 text-sm text-ink-2">{site.tagline}. Cash on delivery all over Lebanon.</p>
         </div>
         <div className="text-sm">

@@ -1,34 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f5f1;
+  /* brand: Layer Purple #5B2EFF, Filament Pink #FF3D7F, Ink #111118 */
+  --bg: #f4f4f7;
   --surface: #ffffff;
-  --surface-2: #efebe4;
-  --line: #e0dad0;
-  --ink: #1d1a16;
-  --ink-2: #5b554c;
-  --ink-3: #8a8378;
-  --accent: #e2561d;
+  --surface-2: #e9e9ef;
+  --line: #dcdce5;
+  --ink: #111118;
+  --ink-2: #4a4a58;
+  --ink-3: #6a6a78;
+  --accent: #5b2eff;
   --accent-ink: #ffffff;
-  --accent-soft: #fbe3d6;
+  --accent-soft: #ece6ff;
+  --pink: #ff3d7f;
   --good: #1f7a3a;
-  --bad: #b3362b;
+  --bad: #c4264f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141210;
-    --surface: #1c1916;
-    --surface-2: #26221e;
-    --line: #36312b;
-    --ink: #f1ece4;
-    --ink-2: #bdb4a7;
-    --ink-3: #8f877b;
-    --accent: #ff7a3d;
-    --accent-ink: #1d0c03;
-    --accent-soft: #3a2116;
+    --bg: #0c0c11;
+    --surface: #16161e;
+    --surface-2: #20202b;
+    --line: #2e2e3c;
+    --ink: #f1f1f6;
+    --ink-2: #c3c3d1;
+    --ink-3: #9a9aab;
+    --accent: #9a7dff;
+    --accent-ink: #0c0c11;
+    --accent-soft: #261d4d;
+    --pink: #ff5c93;
     --good: #5cc27e;
-    --bad: #ef7b6e;
+    --bad: #ff7a9c;
   }
 }
 
@@ -43,9 +46,10 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-pink: var(--pink);
   --color-good: var(--good);
   --color-bad: var(--bad);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
@@ -57,8 +61,14 @@ body {
 
 /* layered stripes, a nod to 3D print layers */
 .layers {
-  background-image: repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 2px, transparent 2px 7px);
+  background-image: repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 12%, transparent) 0 3px, transparent 3px 10px);
 }
+/* two-tone text like the logo: purple top, pink bottom */
+.wordmark, .two-tone {
+  background: linear-gradient(to top, var(--pink) 0 47%, var(--accent) 47% 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-dark .two-tone { background: linear-gradient(to top, #ff5c93 0 47%, #9a7dff 47% 100%); -webkit-background-clip: text; background-clip: text; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
@@ -69,6 +79,10 @@ body {
 .btn:hover { border-color: var(--ink-3); }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { filter: brightness(1.06); }
+.btn-pink { background: #e0145f; border-color: #e0145f; color: #fff; }
+.btn-pink:hover { filter: brightness(1.08); }
+.btn-ghost-dark { background: transparent; border-color: rgb(255 255 255 / .3); color: #fff; }
+.btn-ghost-dark:hover { border-color: #fff; }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 
 .field { display: flex; flex-direction: column; gap: .35rem; }
