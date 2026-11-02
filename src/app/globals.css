@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f7f5f1;
+  --surface: #ffffff;
+  --surface-2: #efebe4;
+  --line: #e0dad0;
+  --ink: #1d1a16;
+  --ink-2: #5b554c;
+  --ink-3: #8a8378;
+  --accent: #e2561d;
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe3d6;
+  --good: #1f7a3a;
+  --bad: #b3362b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #141210;
+    --surface: #1c1916;
+    --surface-2: #26221e;
+    --line: #36312b;
+    --ink: #f1ece4;
+    --ink-2: #bdb4a7;
+    --ink-3: #8f877b;
+    --accent: #ff7a3d;
+    --accent-ink: #1d0c03;
+    --accent-soft: #3a2116;
+    --good: #5cc27e;
+    --bad: #ef7b6e;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* layered stripes, a nod to 3D print layers */
+.layers {
+  background-image: repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 2px, transparent 2px 7px);
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border-radius: .75rem; padding: .7rem 1.1rem; font-weight: 600; font-size: .95rem;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  transition: filter .15s, border-color .15s; cursor: pointer;
+}
+.btn:hover { border-color: var(--ink-3); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.field { display: flex; flex-direction: column; gap: .35rem; }
+.field label { font-size: .85rem; font-weight: 600; color: var(--ink-2); }
+.input {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: .65rem; padding: .65rem .8rem; font-size: 1rem;
+}
+.input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

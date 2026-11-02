@@ -1,0 +1,777 @@
+{
+ "categories": [
+  {
+   "slug": "sports",
+   "name": "Sports",
+   "parent": null,
+   "description": "Gear and accessories for armwrestling, cycling, the gym and race day.",
+   "sort": 0,
+   "active": true
+  },
+  {
+   "slug": "everyday-use",
+   "name": "Everyday Use",
+   "parent": null,
+   "description": "Practical prints for home, office, car and workshop.",
+   "sort": 1,
+   "active": true
+  },
+  {
+   "slug": "souvenirs",
+   "name": "Souvenirs",
+   "parent": null,
+   "description": "Gifts from Ehden, Zgharta and Lebanon.",
+   "sort": 2,
+   "active": true
+  },
+  {
+   "slug": "custom-orders",
+   "name": "Custom Orders",
+   "parent": null,
+   "description": "One-off customer jobs.",
+   "sort": 3,
+   "active": false
+  },
+  {
+   "slug": "armwrestling",
+   "name": "Armwrestling",
+   "parent": "sports",
+   "description": "",
+   "sort": 0,
+   "active": true
+  },
+  {
+   "slug": "cycling",
+   "name": "Cycling",
+   "parent": "sports",
+   "description": "",
+   "sort": 1,
+   "active": true
+  },
+  {
+   "slug": "gym",
+   "name": "Gym",
+   "parent": "sports",
+   "description": "",
+   "sort": 2,
+   "active": true
+  },
+  {
+   "slug": "running-and-events",
+   "name": "Running & Events",
+   "parent": "sports",
+   "description": "",
+   "sort": 3,
+   "active": true
+  },
+  {
+   "slug": "car-parts",
+   "name": "Car Parts",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 0,
+   "active": true
+  },
+  {
+   "slug": "gadgets",
+   "name": "Gadgets",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 1,
+   "active": true
+  },
+  {
+   "slug": "home-and-office",
+   "name": "Home & Office",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 2,
+   "active": true
+  },
+  {
+   "slug": "home-decor",
+   "name": "Home Decor",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 3,
+   "active": true
+  },
+  {
+   "slug": "organisers",
+   "name": "Organisers",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 4,
+   "active": true
+  },
+  {
+   "slug": "workshop-tools",
+   "name": "Workshop Tools",
+   "parent": "everyday-use",
+   "description": "",
+   "sort": 5,
+   "active": true
+  },
+  {
+   "slug": "ehden-and-zgharta",
+   "name": "Ehden & Zgharta",
+   "parent": "souvenirs",
+   "description": "",
+   "sort": 0,
+   "active": true
+  },
+  {
+   "slug": "lebanon",
+   "name": "Lebanon",
+   "parent": "souvenirs",
+   "description": "",
+   "sort": 1,
+   "active": true
+  },
+  {
+   "slug": "sculptures",
+   "name": "Sculptures",
+   "parent": "souvenirs",
+   "description": "",
+   "sort": 2,
+   "active": true
+  },
+  {
+   "slug": "customer-work",
+   "name": "Customer work",
+   "parent": "custom-orders",
+   "description": "",
+   "sort": 0,
+   "active": false
+  }
+ ],
+ "products": [
+  {
+   "slug": "armwrestling-table",
+   "name": "Armwrestling Table",
+   "description": "Armwrestling table with printed parts, delivered boxed.",
+   "price": 200.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 0,
+   "media": []
+  },
+  {
+   "slug": "cone-handle",
+   "name": "Cone Handle",
+   "description": "Cone-shaped grip handle for armwrestling and forearm training.",
+   "price": 15.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 1,
+   "media": []
+  },
+  {
+   "slug": "eccentric-handle",
+   "name": "Eccentric Handle",
+   "description": "Off-centre handle for wrist and forearm strength training.",
+   "price": 19.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 2,
+   "media": []
+  },
+  {
+   "slug": "egg-grip",
+   "name": "Egg Grip",
+   "description": "Egg-shaped grip with steel ring and mesh, for finger and hand strength.",
+   "price": 15.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 3,
+   "media": []
+  },
+  {
+   "slug": "roll-handle-60mm",
+   "name": "Roll Handle 60mm",
+   "description": "60mm rolling handle for wrist curls and grip training.",
+   "price": 17.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 4,
+   "media": []
+  },
+  {
+   "slug": "roll-on-tape-handle-full-rope",
+   "name": "Roll-on Tape Handle (Full Rope)",
+   "description": "Roll handle with full rope wrap and steel ring.",
+   "price": 27.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 5,
+   "media": []
+  },
+  {
+   "slug": "roll-on-tape-handle-60mm",
+   "name": "Roll-on Tape Handle 60mm",
+   "description": "60mm roll handle with steel core and mesh wrap.",
+   "price": 27.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 6,
+   "media": []
+  },
+  {
+   "slug": "steel-handle",
+   "name": "Steel Handle",
+   "description": "Steel training handle with printed fittings and bolt.",
+   "price": 20.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 7,
+   "media": []
+  },
+  {
+   "slug": "wrist-grip-handle",
+   "name": "Wrist Grip Handle",
+   "description": "Wrist grip handle with mesh and steel ring.",
+   "price": 27.0,
+   "category": "armwrestling",
+   "active": true,
+   "personalizable": false,
+   "sort": 8,
+   "media": []
+  },
+  {
+   "slug": "bike-accessories-wall-mount-a1",
+   "name": "Bike Accessories Wall Mount A1",
+   "description": "Wall mount for bike accessories.",
+   "price": 25.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 9,
+   "media": []
+  },
+  {
+   "slug": "bike-accessories-wall-mount-a4",
+   "name": "Bike Accessories Wall Mount A4",
+   "description": "Compact wall mount for bike accessories.",
+   "price": 17.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 10,
+   "media": []
+  },
+  {
+   "slug": "bottle-holder",
+   "name": "Bottle Holder",
+   "description": "Holder for bike bottles.",
+   "price": 15.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 11,
+   "media": []
+  },
+  {
+   "slug": "cycling-gear-display-stand",
+   "name": "Cycling Gear Display Stand",
+   "description": "Display stand for cycling equipment.",
+   "price": 25.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 12,
+   "media": []
+  },
+  {
+   "slug": "helmet-holder",
+   "name": "Helmet Holder",
+   "description": "Wall holder for a cycling helmet.",
+   "price": 20.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 13,
+   "media": []
+  },
+  {
+   "slug": "mtb-wall-organiser-3-slots-voronoi",
+   "name": "MTB Wall Organiser (3 slots, Voronoi)",
+   "description": "Wall organiser for mountain bike gear with a Voronoi pattern.",
+   "price": 35.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 14,
+   "media": []
+  },
+  {
+   "slug": "soft-flask-drying-rack-4",
+   "name": "Soft Flask Drying Rack (4)",
+   "description": "Drying rack for four soft flasks, for runners and cyclists.",
+   "price": 20.0,
+   "category": "cycling",
+   "active": true,
+   "personalizable": false,
+   "sort": 15,
+   "media": []
+  },
+  {
+   "slug": "bottle-ring-holder",
+   "name": "Bottle Ring Holder",
+   "description": "Small ring holder for your gym bottle.",
+   "price": 1.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 16,
+   "media": []
+  },
+  {
+   "slug": "creatine-scoop",
+   "name": "Creatine Scoop",
+   "description": "Measuring scoop for creatine.",
+   "price": 3.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 17,
+   "media": []
+  },
+  {
+   "slug": "dot-capsule",
+   "name": "Dot Capsule",
+   "description": "Gym-themed capsule container.",
+   "price": 20.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 18,
+   "media": []
+  },
+  {
+   "slug": "dumbbell-keychain",
+   "name": "Dumbbell Keychain",
+   "description": "Mini dumbbell keychain.",
+   "price": 3.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 19,
+   "media": []
+  },
+  {
+   "slug": "kettlebell-box",
+   "name": "Kettlebell Box",
+   "description": "Mini kettlebell-shaped box.",
+   "price": 3.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 20,
+   "media": []
+  },
+  {
+   "slug": "kettlebell-lipstick-holder",
+   "name": "Kettlebell Lipstick Holder",
+   "description": "Mini kettlebell that holds a lipstick.",
+   "price": 1.5,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 21,
+   "media": []
+  },
+  {
+   "slug": "powder-storage-men",
+   "name": "Powder Storage (Men)",
+   "description": "Portable storage for protein or creatine powder.",
+   "price": 4.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 22,
+   "media": []
+  },
+  {
+   "slug": "powder-storage-women",
+   "name": "Powder Storage (Women)",
+   "description": "Portable storage for protein or creatine powder.",
+   "price": 5.0,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 23,
+   "media": []
+  },
+  {
+   "slug": "weight-plate-bottle-opener",
+   "name": "Weight Plate Bottle Opener",
+   "description": "Mini weight plate bottle opener.",
+   "price": 1.5,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 24,
+   "media": []
+  },
+  {
+   "slug": "weight-plate-container",
+   "name": "Weight Plate Container",
+   "description": "Mini weight plate container.",
+   "price": 2.5,
+   "category": "gym",
+   "active": true,
+   "personalizable": false,
+   "sort": 25,
+   "media": []
+  },
+  {
+   "slug": "medal-holder",
+   "name": "Medal Holder",
+   "description": "Wall holder to display your race medals.",
+   "price": 8.0,
+   "category": "running-and-events",
+   "active": true,
+   "personalizable": false,
+   "sort": 26,
+   "media": []
+  },
+  {
+   "slug": "water-bottle-holder",
+   "name": "Water Bottle Holder",
+   "description": "Holder for a water bottle.",
+   "price": 15.0,
+   "category": "running-and-events",
+   "active": true,
+   "personalizable": false,
+   "sort": 27,
+   "media": []
+  },
+  {
+   "slug": "mercedes-w126-curtain-part",
+   "name": "Mercedes W126 Curtain Part",
+   "description": "Replacement curtain part for the Mercedes W126.",
+   "price": 14.0,
+   "category": "car-parts",
+   "active": true,
+   "personalizable": false,
+   "sort": 28,
+   "media": []
+  },
+  {
+   "slug": "dumpling-box",
+   "name": "Dumpling Box",
+   "description": "Dumpling-shaped box.",
+   "price": 5.0,
+   "category": "gadgets",
+   "active": true,
+   "personalizable": false,
+   "sort": 29,
+   "media": []
+  },
+  {
+   "slug": "dumpling-twisty-box",
+   "name": "Dumpling Twisty Box",
+   "description": "Twist-open dumpling-shaped box.",
+   "price": 10.0,
+   "category": "gadgets",
+   "active": true,
+   "personalizable": false,
+   "sort": 30,
+   "media": []
+  },
+  {
+   "slug": "helmet-stand",
+   "name": "Helmet Stand",
+   "description": "Display stand for a helmet.",
+   "price": 30.0,
+   "category": "gadgets",
+   "active": true,
+   "personalizable": false,
+   "sort": 31,
+   "media": []
+  },
+  {
+   "slug": "phone-speaker-amplifier",
+   "name": "Phone Speaker Amplifier",
+   "description": "Passive amplifier that makes your phone louder.",
+   "price": 5.0,
+   "category": "gadgets",
+   "active": true,
+   "personalizable": false,
+   "sort": 32,
+   "media": []
+  },
+  {
+   "slug": "suggestion-box",
+   "name": "Suggestion Box",
+   "description": "Suggestion box for offices, shops and schools.",
+   "price": 55.0,
+   "category": "home-and-office",
+   "active": true,
+   "personalizable": false,
+   "sort": 33,
+   "media": []
+  },
+  {
+   "slug": "tissue-box",
+   "name": "Tissue Box",
+   "description": "Tissue box cover.",
+   "price": 15.0,
+   "category": "home-decor",
+   "active": true,
+   "personalizable": false,
+   "sort": 34,
+   "media": []
+  },
+  {
+   "slug": "tissue-box-marble",
+   "name": "Tissue Box (Marble)",
+   "description": "Tissue box cover in marble finish.",
+   "price": 17.0,
+   "category": "home-decor",
+   "active": true,
+   "personalizable": false,
+   "sort": 35,
+   "media": []
+  },
+  {
+   "slug": "7-day-pill-box-hexagon",
+   "name": "7-Day Pill Box (Hexagon)",
+   "description": "Sliding 7-day pill organiser in a hexagon design.",
+   "price": 5.0,
+   "category": "organisers",
+   "active": true,
+   "personalizable": false,
+   "sort": 36,
+   "media": []
+  },
+  {
+   "slug": "pill-box-with-dates",
+   "name": "Pill Box with Dates",
+   "description": "Sliding pill organiser with day labels.",
+   "price": 8.0,
+   "category": "organisers",
+   "active": true,
+   "personalizable": false,
+   "sort": 37,
+   "media": []
+  },
+  {
+   "slug": "center-finder",
+   "name": "Center Finder",
+   "description": "Tool for marking the centre of round and square stock.",
+   "price": 5.0,
+   "category": "workshop-tools",
+   "active": true,
+   "personalizable": false,
+   "sort": 38,
+   "media": []
+  },
+  {
+   "slug": "corner-radius-template",
+   "name": "Corner Radius Template",
+   "description": "Template for marking rounded corners on wood.",
+   "price": 25.0,
+   "category": "workshop-tools",
+   "active": true,
+   "personalizable": false,
+   "sort": 39,
+   "media": []
+  },
+  {
+   "slug": "pin-perno",
+   "name": "Pin (Perno)",
+   "description": "Joinery pin with steel insert.",
+   "price": 8.0,
+   "category": "workshop-tools",
+   "active": true,
+   "personalizable": false,
+   "sort": 40,
+   "media": []
+  },
+  {
+   "slug": "batrak-110mm",
+   "name": "Batrak 110mm",
+   "description": "Batrak figure, 110mm.",
+   "price": 5.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 41,
+   "media": []
+  },
+  {
+   "slug": "batrak-150mm-with-name",
+   "name": "Batrak 150mm with Name",
+   "description": "Batrak figure, 150mm, personalised with a name.",
+   "price": 12.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": true,
+   "sort": 42,
+   "media": []
+  },
+  {
+   "slug": "batrak-255mm-with-name",
+   "name": "Batrak 255mm with Name",
+   "description": "Batrak figure, 255mm, personalised with a name.",
+   "price": 20.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": true,
+   "sort": 43,
+   "media": []
+  },
+  {
+   "slug": "batrak-head-small",
+   "name": "Batrak Head (Small)",
+   "description": "Small Batrak head.",
+   "price": 5.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 44,
+   "media": []
+  },
+  {
+   "slug": "batrak-head-150mm",
+   "name": "Batrak Head 150mm",
+   "description": "Batrak head, 150mm.",
+   "price": 10.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 45,
+   "media": []
+  },
+  {
+   "slug": "batrak-head-200mm",
+   "name": "Batrak Head 200mm",
+   "description": "Batrak head, 200mm.",
+   "price": 18.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 46,
+   "media": []
+  },
+  {
+   "slug": "ehden-lion-with-name",
+   "name": "Ehden Lion with Name",
+   "description": "Ehden lion souvenir, personalised with a name.",
+   "price": 4.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": true,
+   "sort": 47,
+   "media": []
+  },
+  {
+   "slug": "saydet-zgharta-100mm",
+   "name": "Saydet Zgharta 100mm",
+   "description": "Saydet Zgharta figure, 100mm.",
+   "price": 6.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 48,
+   "media": []
+  },
+  {
+   "slug": "youssef-beik-large",
+   "name": "Youssef Beik (Large)",
+   "description": "Large Youssef Beik Karam figure.",
+   "price": 25.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 49,
+   "media": []
+  },
+  {
+   "slug": "youssef-beik-200mm",
+   "name": "Youssef Beik 200mm",
+   "description": "Youssef Beik Karam figure, 200mm.",
+   "price": 20.0,
+   "category": "ehden-and-zgharta",
+   "active": true,
+   "personalizable": false,
+   "sort": 50,
+   "media": []
+  },
+  {
+   "slug": "cedar-magnet",
+   "name": "Cedar Magnet",
+   "description": "Lebanese cedar fridge magnet.",
+   "price": 2.0,
+   "category": "lebanon",
+   "active": true,
+   "personalizable": false,
+   "sort": 51,
+   "media": []
+  },
+  {
+   "slug": "jeren-samir-magnet",
+   "name": "Jeren Samir Magnet",
+   "description": "Souvenir magnet.",
+   "price": 3.0,
+   "category": "lebanon",
+   "active": true,
+   "personalizable": false,
+   "sort": 52,
+   "media": []
+  },
+  {
+   "slug": "lebanon-ibrik-65mm",
+   "name": "Lebanon Ibrik 65mm",
+   "description": "Mini Lebanese ibrik (water jug), 65mm.",
+   "price": 3.0,
+   "category": "lebanon",
+   "active": true,
+   "personalizable": false,
+   "sort": 53,
+   "media": []
+  },
+  {
+   "slug": "dionysus-bust",
+   "name": "Dionysus Bust",
+   "description": "Printed sculpture of Dionysus.",
+   "price": 75.0,
+   "category": "sculptures",
+   "active": true,
+   "personalizable": false,
+   "sort": 54,
+   "media": []
+  },
+  {
+   "slug": "lolio",
+   "name": "Lolio",
+   "description": "Custom order for Anthony M.",
+   "price": 10.0,
+   "category": "customer-work",
+   "active": false,
+   "personalizable": false,
+   "sort": 55,
+   "media": []
+  },
+  {
+   "slug": "lolio-green",
+   "name": "Lolio (Green)",
+   "description": "Custom order for Anthony M.",
+   "price": 10.0,
+   "category": "customer-work",
+   "active": false,
+   "personalizable": false,
+   "sort": 56,
+   "media": []
+  }
+ ]
+}
