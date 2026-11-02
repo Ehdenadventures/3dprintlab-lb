@@ -20,6 +20,9 @@ export default function ProductCard({ p }: { p: Product }) {
             <CubeIcon />
           </div>
         )}
+        {p.stock === 0 && (
+          <span className="absolute right-2 top-2 rounded-full bg-ink px-2 py-0.5 text-xs font-semibold text-bg">Sold out</span>
+        )}
         {p.personalizable && (
           <span className="absolute left-2 top-2 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-semibold">Personalised</span>
         )}

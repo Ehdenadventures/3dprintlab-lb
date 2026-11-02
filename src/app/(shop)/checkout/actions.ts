@@ -1,5 +1,6 @@
 "use server";
-import { createOrder, getProductById, updateOrder } from "@/lib/data";
+import { revalidatePath } from "next/cache";
+import { createOrder, getProductById, OutOfStockError, returnStock, takeStock, updateOrder } from "@/lib/data";
 import { site } from "@/lib/site";
 import type { OrderItem } from "@/lib/types";
 import { sendToWakilni, wakilniAutoSend } from "@/lib/wakilni";
@@ -29,17 +30,35 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
 
   // Prices always come from the database, never from the browser.
   const items: OrderItem[] = [];
+  let tracksStock = false;
   for (const it of input.items) {
     const p = await getProductById(String(it.productId));
     if (!p || !p.active) return { ok: false, error: "An item in your cart is no longer available. Please remove it and try again." };
     const qty = Math.max(1, Math.min(99, Math.floor(Number(it.qty) || 1)));
     const personalization = clean(it.personalization, 30);
     if (p.personalizable && !personalization) return { ok: false, error: `Please add the name to print for "${p.name}".` };
+    if (p.stock === 0) return { ok: false, error: `Sorry, "${p.name}" is sold out. Please remove it from your cart.` };
+    if (p.stock !== null) tracksStock = true;
     items.push({ product_id: p.id, slug: p.slug, name: p.name, price: p.price, qty, personalization });
   }
   const subtotal = Math.round(items.reduce((a, i) => a + i.price * i.qty, 0) * 100) / 100;
   const delivery_fee = site.deliveryFee;
   const total = subtotal + delivery_fee;
+
+  // Reserve the stock first so two people can't buy the last piece.
+  try {
+    await takeStock(items);
+  } catch (e) {
+    if (e instanceof OutOfStockError)
+      return {
+        ok: false,
+        error: e.left === 0
+          ? `Sorry, "${e.productName}" just sold out. Please remove it from your cart.`
+          : `Sorry, only ${e.left} left of "${e.productName}". Please lower the quantity in your cart.`,
+      };
+    console.error("takeStock failed", e);
+    return { ok: false, error: "We couldn't save your order. Please try again, or message us on WhatsApp." };
+  }
 
   try {
     const order = await createOrder({ customer_name: name, phone, city, address, notes, items, subtotal, delivery_fee, total });
@@ -52,9 +71,11 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
         await updateOrder(order.id, { delivery_status: "failed", delivery_error: (e as Error).message });
       }
     }
+    if (tracksStock) revalidatePath("/", "layout");
     return { ok: true, orderId: order.id };
   } catch (e) {
     console.error("placeOrder failed", e);
+    await returnStock(items).catch(() => {});
     return { ok: false, error: "We couldn't save your order. Please try again, or message us on WhatsApp." };
   }
 }

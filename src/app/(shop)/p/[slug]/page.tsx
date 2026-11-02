@@ -40,7 +40,14 @@ export default async function ProductPage({ params }: Props) {
           <h1 className="text-3xl font-extrabold tracking-tight">{p.name}</h1>
           <p className="mt-2 text-2xl font-bold text-accent">{money(p.price)}</p>
           <p className="mt-4 whitespace-pre-line text-ink-2">{p.description}</p>
-          <AddToCart productId={p.id} slug={p.slug} name={p.name} price={p.price} image={cover(p)} personalizable={p.personalizable} />
+          {p.stock !== null && p.stock > 0 && p.stock <= 5 && (
+            <p className="mt-3 text-sm font-semibold text-[#c44a16] dark:text-pink">Only {p.stock} left</p>
+          )}
+          {p.stock === 0 ? (
+            <p className="mt-6 rounded-xl bg-surface-2 px-4 py-3 font-semibold">Sold out for now. Message us on WhatsApp and we can print one for you.</p>
+          ) : (
+            <AddToCart productId={p.id} slug={p.slug} name={p.name} price={p.price} image={cover(p)} personalizable={p.personalizable} max={p.stock ?? 99} />
+          )}
           <ul className="mt-6 space-y-1 text-sm text-ink-2">
             <li>• Pay cash on delivery</li>
             <li>• Delivery all over Lebanon with Wakilni</li>

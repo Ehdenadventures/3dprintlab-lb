@@ -33,7 +33,7 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
 ## Going live (one time)
 
 1. **Supabase** (free): create a project at supabase.com. In SQL Editor, run `supabase/schema.sql`,
-   then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
+   then `supabase/migrations/002_stock.sql` (stock), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
    `service_role` key from Project Settings > API.
 2. **Vercel** (free): import this GitHub repo at vercel.com/new. Add the variables from `.env.example`
    (at least `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP_NUMBER`). Deploy.
@@ -55,3 +55,10 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
 Written from Wakilni's API docs (wiki.wakilni.com/integrations/api.md) but **not yet tested** against
 their servers. Before going live, place a test order with the dev keys and check it appears in
 Wakilni's portal with the right cash amount.
+
+## Stock
+
+Each product has a **Stock** field in admin. Leave it empty for no limit (made to order), or enter how
+many you have ready. An order takes the stock when it is placed, cancelling an order puts it back,
+and at 0 the product shows "Sold out" and can't be ordered. If you add a new SQL file under
+`supabase/migrations/`, run it once in Supabase > SQL Editor.

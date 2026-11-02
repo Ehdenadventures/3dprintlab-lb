@@ -16,6 +16,7 @@ export default function ProductForm({ product, categories, uploads }: { product:
     active: product?.active ?? true,
     personalizable: product?.personalizable ?? false,
     sort: String(product?.sort ?? 0),
+    stock: product?.stock == null ? "" : String(product.stock),
   });
   const [media, setMedia] = useState<Media[]>(product?.media ?? []);
   const [url, setUrl] = useState("");
@@ -61,7 +62,8 @@ export default function ProductForm({ product, categories, uploads }: { product:
     start(async () => {
       const res = await saveProductAction({
         id: product?.id, name: f.name, slug: f.slug, description: f.description, price: Number(f.price),
-        category_id: f.category_id || null, active: f.active, personalizable: f.personalizable, sort: Number(f.sort), media,
+        category_id: f.category_id || null, active: f.active, personalizable: f.personalizable, sort: Number(f.sort),
+        stock: f.stock.trim() === "" ? null : Number(f.stock), media,
       });
       if (res?.error) setError(res.error);
     });
@@ -74,13 +76,16 @@ export default function ProductForm({ product, categories, uploads }: { product:
         <Link href="/admin/products" className="text-sm text-ink-2 hover:text-ink">← All products</Link>
       </div>
       <div className="field"><label htmlFor="name">Name</label><input id="name" className="input" value={f.name} onChange={set("name")} required /></div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="field"><label htmlFor="price">Price (USD)</label><input id="price" className="input" type="number" min="0" step="0.5" inputMode="decimal" value={f.price} onChange={set("price")} required /></div>
         <div className="field"><label htmlFor="cat">Category</label>
           <select id="cat" className="input" value={f.category_id} onChange={set("category_id")}>
             <option value="">No category</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
+        </div>
+        <div className="field"><label htmlFor="stock">Stock</label><input id="stock" className="input" type="number" min="0" step="1" inputMode="numeric" value={f.stock} onChange={set("stock")} placeholder="No limit" />
+          <span className="text-xs text-ink-3">How many you have ready. Empty = no limit (made to order). 0 = sold out.</span>
         </div>
       </div>
       <div className="field"><label htmlFor="desc">Description</label><textarea id="desc" className="input" rows={4} value={f.description} onChange={set("description")} /></div>

@@ -3,7 +3,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
-  deleteCategory, deleteProduct, getOrder, getProducts, saveCategory, saveProduct, updateOrder,
+  deleteCategory, deleteProduct, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
+  takeStock, updateOrder,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
 import { ORDER_STATUSES, type Media, type OrderStatus } from "@/lib/types";
@@ -41,6 +42,7 @@ export type ProductInput = {
   active: boolean;
   personalizable: boolean;
   sort: number;
+  stock: number | null;
   media: Media[];
 };
 
@@ -50,6 +52,8 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
   const slug = slugify(p.slug || name);
   if (!name || !slug) return { error: "Name is required." };
   if (!(p.price >= 0)) return { error: "Price must be 0 or more." };
+  const stock = p.stock === null ? null : Math.floor(Number(p.stock));
+  if (stock !== null && !(stock >= 0)) return { error: "Stock must be 0 or more, or empty for no limit." };
   const clash = (await getProducts({ includeHidden: true })).find((x) => x.slug === slug && x.id !== p.id);
   if (clash) return { error: `Another product already uses the link "${slug}".` };
   const media = (p.media || [])
@@ -59,7 +63,7 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
     await saveProduct({
       id: p.id, name, slug, description: p.description.trim(), price: Math.round(p.price * 100) / 100,
       category_id: p.category_id || null, active: !!p.active, personalizable: !!p.personalizable,
-      sort: Math.floor(p.sort) || 0, media,
+      sort: Math.floor(p.sort) || 0, stock, media,
     });
   } catch (e) {
     return { error: (e as Error).message };
@@ -120,8 +124,19 @@ export async function setOrderStatusAction(fd: FormData) {
   await requireAdmin();
   const status = String(fd.get("status")) as OrderStatus;
   if (!ORDER_STATUSES.includes(status)) return;
-  await updateOrder(String(fd.get("id")), { status });
-  revalidatePath("/admin");
+  const o = await getOrder(String(fd.get("id")));
+  if (!o || o.status === status) return;
+  // Cancelling puts the items back in stock; un-cancelling takes them again if there is enough.
+  if (status === "cancelled") await returnStock(o.items);
+  else if (o.status === "cancelled") {
+    try {
+      await takeStock(o.items);
+    } catch (e) {
+      if (!(e instanceof OutOfStockError)) throw e;
+    }
+  }
+  await updateOrder(o.id, { status });
+  refreshShop();
 }
 
 export async function sendToWakilniAction(fd: FormData) {
