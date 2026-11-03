@@ -36,7 +36,15 @@ export default async function ProductsAdmin() {
                   <td className="p-3 text-ink-2">{label(p.category_id)}</td>
                   <td className="p-3 text-right">{money(p.price)}</td>
                   <td className="p-3 text-right">
-                    {p.stock === null ? <span className="text-ink-3">No limit</span>
+                    {p.variants.length ? (
+                      <span title={p.variants.map((v) => `${v.name}: ${v.stock ?? "no limit"}`).join("\n")}>
+                        {p.variants.map((v) => (
+                          <span key={v.name} className={`ml-2 inline-flex items-center gap-1 ${v.stock === 0 ? "text-bad" : ""}`}>
+                            <span className="h-2.5 w-2.5 rounded-full border border-line" style={{ background: v.hex }} />{v.stock ?? "∞"}
+                          </span>
+                        ))}
+                      </span>
+                    ) : p.stock === null ? <span className="text-ink-3">No limit</span>
                       : p.stock === 0 ? <span className="font-semibold text-bad">Sold out</span>
                       : <span className={p.stock <= 3 ? "font-semibold text-[#c44a16] dark:text-pink" : ""}>{p.stock}</span>}
                   </td>

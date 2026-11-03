@@ -10,6 +10,7 @@ export type CartLine = {
   image?: string;
   qty: number;
   personalization: string;
+  colour?: string;
 };
 
 type Cart = {
@@ -46,7 +47,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [lines, ready]);
 
   const add = useCallback<Cart["add"]>((l, qty = 1) => {
-    const key = `${l.productId}::${l.personalization.trim()}`;
+    const key = `${l.productId}::${l.colour ?? ""}::${l.personalization.trim()}`;
     setLines((cur) => {
       const found = cur.find((x) => x.key === key);
       if (found) return cur.map((x) => (x.key === key ? { ...x, qty: Math.min(99, x.qty + qty) } : x));

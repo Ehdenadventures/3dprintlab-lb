@@ -5,6 +5,13 @@ import type { Media, Product } from "@/lib/types";
 import { createUploadUrl, deleteProductAction, saveProductAction } from "../../actions";
 
 type Opt = { id: string; label: string };
+type ColourRow = { name: string; hex: string; stock: string; image: string };
+
+const PRESETS: [string, string][] = [
+  ["Black", "#1c1c1c"], ["White", "#f4f4f4"], ["Grey", "#8a8d93"], ["Red", "#d32f2f"], ["Orange", "#ed632c"],
+  ["Yellow", "#f5c518"], ["Green", "#2e9e4f"], ["Blue", "#1e5bd8"], ["Navy", "#283189"], ["Purple", "#7b3fbf"],
+  ["Pink", "#ec6fa8"], ["Gold", "#c9a227"], ["Silver", "#b8bcc2"],
+];
 
 export default function ProductForm({ product, categories, uploads }: { product: Product | null; categories: Opt[]; uploads: boolean }) {
   const [f, setF] = useState({
@@ -19,6 +26,15 @@ export default function ProductForm({ product, categories, uploads }: { product:
     stock: product?.stock == null ? "" : String(product.stock),
   });
   const [media, setMedia] = useState<Media[]>(product?.media ?? []);
+  const [colours, setColours] = useState<ColourRow[]>(
+    (product?.variants ?? []).map((v) => ({ name: v.name, hex: v.hex, stock: v.stock == null ? "" : String(v.stock), image: v.image ?? "" })),
+  );
+  const images = media.filter((m) => m.type === "image");
+  const setColour = (i: number, patch: Partial<ColourRow>) => setColours((c) => c.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addColour = (name = "", hex = "#888888") => {
+    if (name && colours.some((c) => c.name.toLowerCase() === name.toLowerCase())) return;
+    setColours((c) => [...c, { name, hex, stock: "", image: "" }]);
+  };
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -63,7 +79,9 @@ export default function ProductForm({ product, categories, uploads }: { product:
       const res = await saveProductAction({
         id: product?.id, name: f.name, slug: f.slug, description: f.description, price: Number(f.price),
         category_id: f.category_id || null, active: f.active, personalizable: f.personalizable, sort: Number(f.sort),
-        stock: f.stock.trim() === "" ? null : Number(f.stock), media,
+        stock: colours.length || f.stock.trim() === "" ? null : Number(f.stock),
+        variants: colours.filter((c) => c.name.trim()).map((c) => ({ name: c.name.trim(), hex: c.hex, stock: c.stock.trim() === "" ? null : Number(c.stock), image: media.some((m) => m.url === c.image) ? c.image : undefined })),
+        media,
       });
       if (res?.error) setError(res.error);
     });
@@ -84,10 +102,50 @@ export default function ProductForm({ product, categories, uploads }: { product:
             {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
-        <div className="field"><label htmlFor="stock">Stock</label><input id="stock" className="input" type="number" min="0" step="1" inputMode="numeric" value={f.stock} onChange={set("stock")} placeholder="No limit" />
-          <span className="text-xs text-ink-3">How many you have ready. Empty = no limit (made to order). 0 = sold out.</span>
+        <div className="field"><label htmlFor="stock">Stock</label><input id="stock" className="input" type="number" min="0" step="1" inputMode="numeric" value={colours.length ? "" : f.stock} onChange={set("stock")} placeholder={colours.length ? "Per colour below" : "No limit"} disabled={colours.length > 0} />
+          <span className="text-xs text-ink-3">{colours.length ? "This product has colours, so stock is set for each colour below." : "How many you have ready. Empty = no limit (made to order). 0 = sold out."}</span>
         </div>
       </div>
+      <fieldset className="rounded-2xl border border-line bg-surface p-4">
+        <legend className="px-1 text-sm font-semibold text-ink-2">Colours</legend>
+        <p className="mb-3 text-xs text-ink-3">Optional. Add colours if customers can choose one. Each colour has its own stock (empty = no limit, 0 = sold out). {images.length ? "Tap a photo under a colour to show it when that colour is picked." : "Upload photos below, then you can link a photo to each colour."}</p>
+        {colours.length > 0 && (
+          <div className="mb-3 space-y-3">
+            {colours.map((c, i) => (
+              <div key={i}>
+              <div className="grid grid-cols-[3rem_minmax(0,1fr)_7.5rem_auto] items-center gap-2">
+                <input type="color" aria-label="Colour" value={c.hex} onChange={(e) => setColour(i, { hex: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border border-line bg-surface p-1" />
+                <input className="input" placeholder="Colour name" aria-label="Colour name" value={c.name} maxLength={40} onChange={(e) => setColour(i, { name: e.target.value })} />
+                <input className="input" type="number" min="0" step="1" inputMode="numeric" placeholder="No limit" aria-label={`Stock for ${c.name || "this colour"}`} value={c.stock} onChange={(e) => setColour(i, { stock: e.target.value })} />
+                <button type="button" className="px-2 text-sm text-bad" onClick={() => setColours(colours.filter((_, j) => j !== i))}>Remove</button>
+              </div>
+              {images.length > 0 && (
+                <div className="mt-1.5 flex items-center gap-1.5 pl-14">
+                  <span className="mr-1 text-xs text-ink-3">Photo:</span>
+                  {images.map((m, k) => (
+                    <button key={m.url} type="button" onClick={() => setColour(i, { image: c.image === m.url ? "" : m.url })}
+                      aria-label={`Use photo ${k + 1} for ${c.name || "this colour"}`} aria-pressed={c.image === m.url}
+                      className={`h-9 w-9 shrink-0 overflow-hidden rounded-md border-2 ${c.image === m.url ? "border-accent" : "border-transparent opacity-60 hover:opacity-100"}`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={m.url} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.filter(([n]) => !colours.some((c) => c.name.toLowerCase() === n.toLowerCase())).map(([n, h]) => (
+            <button key={n} type="button" onClick={() => addColour(n, h)} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-sm hover:border-ink-3">
+              <span className="h-3.5 w-3.5 rounded-full border border-line" style={{ background: h }} /> {n}
+            </button>
+          ))}
+          <button type="button" onClick={() => addColour()} className="rounded-full border border-dashed border-ink-3 px-3 py-1 text-sm">+ Other colour</button>
+        </div>
+      </fieldset>
+
       <div className="field"><label htmlFor="desc">Description</label><textarea id="desc" className="input" rows={4} value={f.description} onChange={set("description")} /></div>
 
       <fieldset className="rounded-2xl border border-line bg-surface p-4">

@@ -31,6 +31,7 @@ export default function CartPage() {
             </div>
             <div className="min-w-0 flex-1">
               <Link href={`/p/${l.slug}`} className="font-semibold hover:underline">{l.name}</Link>
+              {l.colour && <p className="text-sm text-ink-2">Colour: {l.colour}</p>}
               {l.personalization && <p className="text-sm text-ink-2">Name: {l.personalization}</p>}
               <p className="text-sm text-ink-3">{money(l.price)} each</p>
               <div className="mt-2 flex items-center gap-3">

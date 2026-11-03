@@ -33,7 +33,7 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
 ## Going live (one time)
 
 1. **Supabase** (free): create a project at supabase.com. In SQL Editor, run `supabase/schema.sql`,
-   then `supabase/migrations/002_stock.sql` (stock), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
+   then `supabase/migrations/002_stock.sql` and `003_colours.sql` (stock and colours), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
    `service_role` key from Project Settings > API.
 2. **Vercel** (free): import this GitHub repo at vercel.com/new. Add the variables from `.env.example`
    (at least `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP_NUMBER`). Deploy.
@@ -62,3 +62,9 @@ Each product has a **Stock** field in admin. Leave it empty for no limit (made t
 many you have ready. An order takes the stock when it is placed, cancelling an order puts it back,
 and at 0 the product shows "Sold out" and can't be ordered. If you add a new SQL file under
 `supabase/migrations/`, run it once in Supabase > SQL Editor.
+
+## Colours
+
+In admin, a product can have **Colours** (pick from the presets or add your own). Each colour has
+its own stock and can have its own photo (tap a photo under the colour), so the main picture changes when a customer picks that colour. A colour at 0 shows crossed out.
+When a product has colours, its main Stock field is not used.
