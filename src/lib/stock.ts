@@ -26,7 +26,8 @@ export function cleanVariants(raw: unknown): Variant[] {
     const hex = /^#[0-9a-f]{6}$/i.test(String(r?.hex)) ? String(r.hex) : "#888888";
     const s = r?.stock;
     const stock = s === null || s === undefined || s === "" ? null : Math.max(0, Math.floor(Number(s)) || 0);
-    out.push({ name, hex, stock });
+    const image = typeof r?.image === "string" && /^https?:\/\//.test(r.image) ? r.image : undefined;
+    out.push(image ? { name, hex, stock, image } : { name, hex, stock });
   }
   return out.slice(0, 30);
 }

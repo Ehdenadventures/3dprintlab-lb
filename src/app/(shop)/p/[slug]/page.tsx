@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import AddToCart from "@/components/AddToCart";
 import ProductCard, { cover } from "@/components/ProductCard";
 import ProductMedia from "@/components/ProductMedia";
+import { ColourProvider } from "@/components/ColourContext";
 import { WhatsAppIcon } from "@/components/Icons";
 import { getCategories, getProductBySlug, getProducts } from "@/lib/data";
 import { money, site, whatsappLink } from "@/lib/site";
@@ -35,8 +36,9 @@ export default async function ProductPage({ params }: Props) {
         {parent && <> / <Link href={`/c/${parent.slug}`} className="hover:text-ink">{parent.name}</Link></>}
         {cat && <> / <Link href={`/c/${(parent ?? cat).slug}#${cat.slug}`} className="hover:text-ink">{cat.name}</Link></>}
       </nav>
+      <ColourProvider initial={p.variants.find((v) => v.stock !== 0)?.name ?? ""}>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
-        <ProductMedia media={p.media} name={p.name} />
+        <ProductMedia media={p.media} name={p.name} colourImages={Object.fromEntries(p.variants.filter((v) => v.image).map((v) => [v.name, v.image!]))} />
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">{p.name}</h1>
           <p className="mt-2 text-2xl font-bold text-accent">{money(p.price)}</p>
@@ -61,6 +63,7 @@ export default async function ProductPage({ params }: Props) {
           )}
         </div>
       </div>
+      </ColourProvider>
       {related.length > 0 && (
         <section className="mt-14">
           <h2 className="mb-4 text-xl font-bold">More in {cat?.name}</h2>

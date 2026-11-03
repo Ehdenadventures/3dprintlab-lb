@@ -66,5 +66,5 @@ and at 0 the product shows "Sold out" and can't be ordered. If you add a new SQL
 ## Colours
 
 In admin, a product can have **Colours** (pick from the presets or add your own). Each colour has
-its own stock, and customers choose a colour on the product page. A colour at 0 shows crossed out.
+its own stock and can have its own photo (tap a photo under the colour), so the main picture changes when a customer picks that colour. A colour at 0 shows crossed out.
 When a product has colours, its main Stock field is not used.

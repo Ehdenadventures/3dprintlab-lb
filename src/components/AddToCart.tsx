@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Variant } from "@/lib/types";
 import { useCart } from "./CartProvider";
+import { useColour } from "./ColourContext";
 
 type Props = {
   productId: string; slug: string; name: string; price: number; image?: string; personalizable: boolean;
@@ -16,7 +17,9 @@ export default function AddToCart(p: Props) {
   const [qty, setQty] = useState(1);
   const [text, setText] = useState("");
   const [added, setAdded] = useState(false);
-  const [colour, setColour] = useState(p.colours.find((c) => c.stock !== 0)?.name ?? "");
+  const local = useState(p.colours.find((c) => c.stock !== 0)?.name ?? "");
+  const shared = useColour();
+  const [colour, setColour] = shared ? [shared.colour, shared.setColour] : local;
 
   const chosen = p.colours.find((c) => c.name === colour);
   const left = p.colours.length ? (chosen ? chosen.stock : 0) : p.stock;
@@ -73,7 +76,7 @@ export default function AddToCart(p: Props) {
           className="btn btn-primary flex-1"
           disabled={blocked}
           onClick={() => {
-            add({ productId: p.productId, slug: p.slug, name: p.name, price: p.price, image: p.image, personalization: text, colour: chosen?.name }, qty);
+            add({ productId: p.productId, slug: p.slug, name: p.name, price: p.price, image: chosen?.image ?? p.image, personalization: text, colour: chosen?.name }, qty);
             setAdded(true);
           }}
         >

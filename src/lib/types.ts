@@ -1,7 +1,7 @@
 export type Media = { type: "image" | "video"; url: string };
 
 /** A colour of a product. stock null = no limit. */
-export type Variant = { name: string; hex: string; stock: number | null };
+export type Variant = { name: string; hex: string; stock: number | null; /** photo shown when this colour is picked */ image?: string };
 
 export type Category = {
   id: string;
