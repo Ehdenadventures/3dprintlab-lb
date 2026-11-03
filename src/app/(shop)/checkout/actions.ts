@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createOrder, getProductById, OutOfStockError, returnStock, takeStock, updateOrder } from "@/lib/data";
 import { site } from "@/lib/site";
+import { hasColours, stockFor } from "@/lib/stock";
 import type { OrderItem } from "@/lib/types";
 import { sendToWakilni, wakilniAutoSend } from "@/lib/wakilni";
 
@@ -11,7 +12,7 @@ export type CheckoutInput = {
   city: string;
   address: string;
   notes: string;
-  items: { productId: string; qty: number; personalization: string }[];
+  items: { productId: string; qty: number; personalization: string; colour?: string }[];
 };
 
 export type CheckoutResult = { ok: true; orderId: string } | { ok: false; error: string };
@@ -37,9 +38,16 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
     const qty = Math.max(1, Math.min(99, Math.floor(Number(it.qty) || 1)));
     const personalization = clean(it.personalization, 30);
     if (p.personalizable && !personalization) return { ok: false, error: `Please add the name to print for "${p.name}".` };
-    if (p.stock === 0) return { ok: false, error: `Sorry, "${p.name}" is sold out. Please remove it from your cart.` };
-    if (p.stock !== null) tracksStock = true;
-    items.push({ product_id: p.id, slug: p.slug, name: p.name, price: p.price, qty, personalization });
+    let colour: string | undefined;
+    if (hasColours(p)) {
+      colour = p.variants.find((v) => v.name === clean(it.colour, 40))?.name;
+      if (!colour) return { ok: false, error: `Please choose a colour for "${p.name}". Remove it from your cart and add it again.` };
+    }
+    const label = colour ? `${p.name} (${colour})` : p.name;
+    const left = stockFor(p, colour);
+    if (left === 0) return { ok: false, error: `Sorry, "${label}" is sold out. Please remove it from your cart.` };
+    if (left !== null) tracksStock = true;
+    items.push({ product_id: p.id, slug: p.slug, name: p.name, price: p.price, qty, personalization, ...(colour ? { colour } : {}) });
   }
   const subtotal = Math.round(items.reduce((a, i) => a + i.price * i.qty, 0) * 100) / 100;
   const delivery_fee = site.deliveryFee;

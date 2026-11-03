@@ -1,6 +1,7 @@
 import "server-only";
 import seed from "./seed.json";
 import { db } from "./supabase";
+import { cleanVariants } from "./stock";
 import type { Category, Order, OrderItem, OrderStatus, Product } from "./types";
 
 /*
@@ -33,6 +34,7 @@ function demo(): Demo {
       personalizable: p.personalizable,
       sort: p.sort,
       stock: null,
+      variants: [],
       media: [],
     }));
     g.__demo = { categories, products, orders: [] };
@@ -42,8 +44,9 @@ function demo(): Demo {
 
 export const isDemo = () => db() === null;
 
-const num = <T extends { price?: unknown; stock?: unknown }>(r: T) => ({
+const num = <T extends { price?: unknown; stock?: unknown; variants?: unknown }>(r: T) => ({
   ...r,
+  variants: cleanVariants(r.variants),
   price: Number(r.price),
   stock: r.stock == null ? null : Number(r.stock),
 });
@@ -171,26 +174,40 @@ export class OutOfStockError extends Error {
   }
 }
 
-type StockLine = Pick<OrderItem, "product_id" | "name" | "qty">;
+type StockLine = Pick<OrderItem, "product_id" | "name" | "qty" | "colour">;
 // If the stock SQL (supabase/migrations/002_stock.sql) hasn't been run yet, skip stock instead of blocking orders.
 const missingFn = (e: { code?: string; message: string }) => e.code === "PGRST202" || /could not find the function/i.test(e.message);
-const stockPayload = (items: StockLine[]) => items.map(({ product_id, name, qty }) => ({ product_id, name, qty }));
+const stockPayload = (items: StockLine[]) => items.map(({ product_id, name, qty, colour }) => ({ product_id, name, qty, colour: colour ?? "" }));
+
+/** Preview mode: where each order line's stock lives (the product, or one of its colours). */
+function demoSlots(items: StockLine[]) {
+  const need = new Map<string, StockLine>();
+  for (const i of items) {
+    const k = `${i.product_id}::${i.colour ?? ""}`;
+    const cur = need.get(k);
+    need.set(k, cur ? { ...cur, qty: cur.qty + i.qty } : { ...i });
+  }
+  const out: { label: string; qty: number; get: () => number | null; add: (n: number) => void }[] = [];
+  for (const i of need.values()) {
+    const p = demo().products.find((x) => x.id === i.product_id);
+    if (!p) continue;
+    const v = i.colour ? p.variants.find((x) => x.name === i.colour) : undefined;
+    if (v) out.push({ label: `${p.name} (${v.name})`, qty: i.qty, get: () => v.stock, add: (n) => { if (v.stock !== null) v.stock += n; } });
+    else out.push({ label: p.name, qty: i.qty, get: () => p.stock, add: (n) => { if (p.stock !== null) p.stock += n; } });
+  }
+  return out;
+}
 
 /** Takes stock for a whole order at once. Throws OutOfStockError (and changes nothing) if anything is short. */
 export async function takeStock(items: StockLine[]) {
   const s = db();
   if (!s) {
-    const d = demo();
-    const need = new Map<string, number>();
-    for (const i of items) need.set(i.product_id, (need.get(i.product_id) ?? 0) + i.qty);
-    for (const [id, qty] of need) {
-      const p = d.products.find((x) => x.id === id);
-      if (p && p.stock !== null && p.stock < qty) throw new OutOfStockError(p.name, p.stock);
+    const slots = demoSlots(items);
+    for (const x of slots) {
+      const left = x.get();
+      if (left !== null && left < x.qty) throw new OutOfStockError(x.label, left);
     }
-    for (const [id, qty] of need) {
-      const p = d.products.find((x) => x.id === id);
-      if (p && p.stock !== null) p.stock -= qty;
-    }
+    for (const x of slots) x.add(-x.qty);
     return;
   }
   const { error } = await s.rpc("take_stock", { p_items: stockPayload(items) });
@@ -205,10 +222,7 @@ export async function takeStock(items: StockLine[]) {
 export async function returnStock(items: StockLine[]) {
   const s = db();
   if (!s) {
-    for (const i of items) {
-      const p = demo().products.find((x) => x.id === i.product_id);
-      if (p && p.stock !== null) p.stock += i.qty;
-    }
+    for (const x of demoSlots(items)) x.add(x.qty);
     return;
   }
   const { error } = await s.rpc("return_stock", { p_items: stockPayload(items) });

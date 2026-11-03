@@ -7,7 +7,8 @@ import {
   takeStock, updateOrder,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
-import { ORDER_STATUSES, type Media, type OrderStatus } from "@/lib/types";
+import { cleanVariants } from "@/lib/stock";
+import { ORDER_STATUSES, type Media, type OrderStatus, type Variant } from "@/lib/types";
 import { sendToWakilni } from "@/lib/wakilni";
 
 const slugify = (s: string) =>
@@ -43,6 +44,7 @@ export type ProductInput = {
   personalizable: boolean;
   sort: number;
   stock: number | null;
+  variants: Variant[];
   media: Media[];
 };
 
@@ -63,7 +65,7 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
     await saveProduct({
       id: p.id, name, slug, description: p.description.trim(), price: Math.round(p.price * 100) / 100,
       category_id: p.category_id || null, active: !!p.active, personalizable: !!p.personalizable,
-      sort: Math.floor(p.sort) || 0, stock, media,
+      sort: Math.floor(p.sort) || 0, stock, variants: cleanVariants(p.variants), media,
     });
   } catch (e) {
     return { error: (e as Error).message };

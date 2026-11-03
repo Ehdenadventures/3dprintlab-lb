@@ -1,5 +1,8 @@
 export type Media = { type: "image" | "video"; url: string };
 
+/** A colour of a product. stock null = no limit. */
+export type Variant = { name: string; hex: string; stock: number | null };
+
 export type Category = {
   id: string;
   slug: string;
@@ -22,6 +25,8 @@ export type Product = {
   sort: number;
   /** How many are ready to sell. null = no limit (made to order). */
   stock: number | null;
+  /** Colours, each with its own stock. Empty = the product has no colour choice. */
+  variants: Variant[];
   media: Media[];
 };
 
@@ -32,6 +37,7 @@ export type OrderItem = {
   price: number;
   qty: number;
   personalization: string;
+  colour?: string;
 };
 
 export const ORDER_STATUSES = ["new", "confirmed", "printing", "shipped", "delivered", "cancelled"] as const;

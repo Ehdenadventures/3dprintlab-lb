@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { money } from "@/lib/site";
+import { isSoldOut } from "@/lib/stock";
 import { CubeIcon } from "./Icons";
 
 export function cover(p: Product) {
@@ -20,7 +21,7 @@ export default function ProductCard({ p }: { p: Product }) {
             <CubeIcon />
           </div>
         )}
-        {p.stock === 0 && (
+        {isSoldOut(p) && (
           <span className="absolute right-2 top-2 rounded-full bg-ink px-2 py-0.5 text-xs font-semibold text-bg">Sold out</span>
         )}
         {p.personalizable && (
@@ -29,7 +30,14 @@ export default function ProductCard({ p }: { p: Product }) {
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
         <h3 className="text-sm font-semibold leading-snug">{p.name}</h3>
-        <p className="mt-auto pt-1 font-bold text-accent">{money(p.price)}</p>
+        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+          <p className="font-bold text-accent">{money(p.price)}</p>
+          {p.variants.length > 1 && (
+            <span className="flex -space-x-1" aria-label={`${p.variants.length} colours`}>
+              {p.variants.slice(0, 5).map((v) => <span key={v.name} className="h-3.5 w-3.5 rounded-full border border-surface" style={{ background: v.hex }} />)}
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );
