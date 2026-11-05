@@ -33,7 +33,7 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
 ## Going live (one time)
 
 1. **Supabase** (free): create a project at supabase.com. In SQL Editor, run `supabase/schema.sql`,
-   then `supabase/migrations/002_stock.sql` and `003_colours.sql` (stock and colours), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
+   then `supabase/migrations/002_stock.sql` and `003_colours.sql` (stock and colours) and `004_posts.sql` (Instagram posts), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
    `service_role` key from Project Settings > API.
 2. **Vercel** (free): import this GitHub repo at vercel.com/new. Add the variables from `.env.example`
    (at least `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP_NUMBER`). Deploy.
@@ -68,3 +68,10 @@ and at 0 the product shows "Sold out" and can't be ordered. If you add a new SQL
 In admin, a product can have **Colours** (pick from the presets or add your own). Each colour has
 its own stock and can have its own photo (tap a photo under the colour), so the main picture changes when a customer picks that colour. A colour at 0 shows crossed out.
 When a product has colours, its main Stock field is not used.
+
+## Shop our Instagram
+
+Admin > **Instagram posts**: add each Instagram post with the same picture and pick the products in it.
+Customers open `3dprintlab-lb.com/ig` (put it in your Instagram bio), see the posts as a grid, and
+tap one to see and order its items. Each post also has its own link (`/ig/1`, `/ig/2`, ...) for
+story link stickers.

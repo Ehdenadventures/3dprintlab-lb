@@ -40,6 +40,18 @@ export type OrderItem = {
   colour?: string;
 };
 
+/** An Instagram post that customers can shop from the website. */
+export type Post = {
+  id: string;
+  number: number;
+  title: string;
+  caption: string;
+  image: string;
+  product_ids: string[];
+  active: boolean;
+  created_at: string;
+};
+
 export const ORDER_STATUSES = ["new", "confirmed", "printing", "shipped", "delivered", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
