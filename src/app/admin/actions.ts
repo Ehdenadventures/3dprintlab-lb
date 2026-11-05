@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
-  deleteCategory, deleteProduct, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
+  deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
   takeStock, updateOrder,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
@@ -82,17 +82,44 @@ export async function deleteProductAction(id: string) {
 }
 
 /** Gives the browser a one-time URL to upload a photo or video straight to Supabase Storage. */
-export async function createUploadUrl(fileName: string): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
+export async function createUploadUrl(fileName: string, folder: "products" | "posts" = "products"): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
   await requireAdmin();
   const s = db();
   if (!s) return { error: "Uploads need Supabase. Paste an image URL instead, or connect Supabase." };
   const ext = (fileName.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5);
   const base = slugify(fileName.replace(/\.[^.]+$/, "")) || "file";
-  const path = `products/${Date.now()}-${base}.${ext}`;
+  const path = `${folder}/${Date.now()}-${base}.${ext}`;
   const { data, error } = await s.storage.from(MEDIA_BUCKET).createSignedUploadUrl(path);
   if (error || !data) return { error: error?.message ?? "Could not create upload URL" };
   const { data: pub } = s.storage.from(MEDIA_BUCKET).getPublicUrl(path);
   return { uploadUrl: data.signedUrl, publicUrl: pub.publicUrl };
+}
+
+/* ---------- Instagram posts ---------- */
+
+export async function savePostAction(p: PostInput): Promise<{ error?: string }> {
+  await requireAdmin();
+  if (!/^https?:\/\//.test(p.image)) return { error: "Add the post picture first." };
+  const known = new Set((await getProducts({ includeHidden: true })).map((x) => x.id));
+  const product_ids = [...new Set(p.product_ids.map(String))].filter((id) => known.has(id)).slice(0, 30);
+  if (!product_ids.length) return { error: "Pick at least one product that appears in the post." };
+  try {
+    await savePost({
+      id: p.id, title: String(p.title ?? "").trim().slice(0, 120), caption: String(p.caption ?? "").trim().slice(0, 2200),
+      image: p.image, product_ids, active: !!p.active,
+    });
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  refreshShop();
+  redirect("/admin/posts");
+}
+
+export async function deletePostAction(id: string) {
+  await requireAdmin();
+  await deletePost(id);
+  refreshShop();
+  redirect("/admin/posts");
 }
 
 /* ---------- categories ---------- */

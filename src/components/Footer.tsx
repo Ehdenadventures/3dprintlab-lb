@@ -25,6 +25,7 @@ export default function Footer() {
             <li><Link href="/c/everyday-use" className="hover:text-ink">Everyday Use</Link></li>
             <li><Link href="/c/souvenirs" className="hover:text-ink">Souvenirs</Link></li>
             <li><Link href="/custom" className="hover:text-ink">Custom orders</Link></li>
+            <li><Link href="/ig" className="hover:text-ink">Shop our Instagram</Link></li>
           </ul>
         </div>
         <div className="text-sm">

@@ -2,7 +2,7 @@ import "server-only";
 import seed from "./seed.json";
 import { db } from "./supabase";
 import { cleanVariants } from "./stock";
-import type { Category, Order, OrderItem, OrderStatus, Product } from "./types";
+import type { Category, Order, OrderItem, OrderStatus, Post, Product } from "./types";
 
 /*
  * All reads and writes go through this file.
@@ -10,7 +10,7 @@ import type { Category, Order, OrderItem, OrderStatus, Product } from "./types";
  * on an in-memory copy of src/lib/seed.json so the site still works.
  */
 
-type Demo = { categories: Category[]; products: Product[]; orders: Order[] };
+type Demo = { categories: Category[]; products: Product[]; orders: Order[]; posts: Post[] };
 const g = globalThis as unknown as { __demo?: Demo };
 function demo(): Demo {
   if (!g.__demo) {
@@ -37,7 +37,7 @@ function demo(): Demo {
       variants: [],
       media: [],
     }));
-    g.__demo = { categories, products, orders: [] };
+    g.__demo = { categories, products, orders: [], posts: [] };
   }
   return g.__demo;
 }
@@ -298,6 +298,70 @@ export async function updateOrder(
     return;
   }
   const { error } = await s.from("orders").update(patch).eq("id", id);
+  fail(error);
+}
+
+/* ---------------- Instagram posts ---------------- */
+
+const normalizePost = (r: Record<string, unknown>) =>
+  ({
+    ...r,
+    number: Number(r.number),
+    product_ids: Array.isArray(r.product_ids) ? (r.product_ids as unknown[]).map(String) : [],
+  }) as Post;
+
+export async function getPosts(opts: { includeHidden?: boolean } = {}): Promise<Post[]> {
+  const s = db();
+  let rows: Post[];
+  if (!s) rows = demo().posts.map((p) => ({ ...p }));
+  else {
+    const { data, error } = await s.from("posts").select("*").order("created_at", { ascending: false }).limit(300);
+    // Before the posts SQL is run the table doesn't exist yet; show no posts instead of an error.
+    if (error && /posts/.test(error.message) && /(does not exist|schema cache)/i.test(error.message)) return [];
+    fail(error);
+    rows = (data ?? []).map(normalizePost);
+  }
+  rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return opts.includeHidden ? rows : rows.filter((p) => p.active);
+}
+
+export async function getPostByNumber(n: number, opts: { includeHidden?: boolean } = {}) {
+  return (await getPosts(opts)).find((p) => p.number === n) ?? null;
+}
+
+export async function getPostById(id: string) {
+  return (await getPosts({ includeHidden: true })).find((p) => p.id === id) ?? null;
+}
+
+export type PostInput = Pick<Post, "title" | "caption" | "image" | "product_ids" | "active"> & { id?: string };
+
+export async function savePost(p: PostInput) {
+  const s = db();
+  if (!s) {
+    const d = demo();
+    const i = d.posts.findIndex((x) => x.id === p.id);
+    if (i >= 0) d.posts[i] = { ...d.posts[i], ...p, id: d.posts[i].id };
+    else
+      d.posts.push({
+        ...p,
+        id: crypto.randomUUID(),
+        number: d.posts.reduce((m, x) => Math.max(m, x.number), 0) + 1,
+        created_at: new Date().toISOString(),
+      });
+    return;
+  }
+  const { id, ...rest } = p;
+  const { error } = id ? await s.from("posts").update(rest).eq("id", id) : await s.from("posts").insert(rest);
+  fail(error);
+}
+
+export async function deletePost(id: string) {
+  const s = db();
+  if (!s) {
+    demo().posts = demo().posts.filter((p) => p.id !== id);
+    return;
+  }
+  const { error } = await s.from("posts").delete().eq("id", id);
   fail(error);
 }
 
