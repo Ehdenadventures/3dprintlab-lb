@@ -2,17 +2,18 @@ import { requireAdmin } from "@/lib/auth";
 import { getCategories, getProducts } from "@/lib/data";
 import type { Category } from "@/lib/types";
 import AdminNav from "../AdminNav";
-import { deleteCategoryAction, saveCategoryAction } from "../actions";
+import { saveCategoryAction } from "../actions";
+import DeleteButton from "./DeleteButton";
 
 export const dynamic = "force-dynamic";
 
-function Row({ c, tops, count }: { c?: Category; tops: Category[]; count?: number }) {
+function Row({ c, tops, count = 0, subs = 0, parent, placeholder = "New category" }: { c?: Category; tops: Category[]; count?: number; subs?: number; parent?: string; placeholder?: string }) {
   return (
     <form action={saveCategoryAction} className="grid items-end gap-2 rounded-xl border border-line bg-surface p-3 sm:grid-cols-[1.4fr_1.2fr_2fr_70px_auto_auto]">
       {c && <input type="hidden" name="id" value={c.id} />}
-      <div className="field"><label>Name</label><input name="name" className="input" defaultValue={c?.name} required placeholder="New category" /></div>
+      <div className="field"><label>Name</label><input name="name" className="input" defaultValue={c?.name} required placeholder={placeholder} /></div>
       <div className="field"><label>Inside</label>
-        <select name="parent_id" className="input" defaultValue={c?.parent_id ?? ""}>
+        <select name="parent_id" className="input" defaultValue={c?.parent_id ?? parent ?? ""}>
           <option value="">Main category</option>
           {tops.filter((t) => t.id !== c?.id).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
@@ -23,7 +24,7 @@ function Row({ c, tops, count }: { c?: Category; tops: Category[]; count?: numbe
       <div className="flex gap-2 pb-0.5">
         <button className="btn py-2 text-sm">{c ? "Save" : "Add"}</button>
         {c && (
-          <button formAction={deleteCategoryAction} className="btn py-2 text-sm text-bad" title={count ? `${count} products will become uncategorised` : ""}>Delete</button>
+          <DeleteButton name={c.name} products={count} subs={subs} />
         )}
       </div>
     </form>
@@ -47,7 +48,7 @@ export default async function CategoriesAdmin() {
         {tops.map((t) => (
           <section key={t.id} className="space-y-2">
             <h2 className="font-semibold">{t.name}</h2>
-            <Row c={t} tops={tops} count={count(t.id)} />
+            <Row c={t} tops={tops} count={count(t.id)} subs={cats.filter((c) => c.parent_id === t.id).length} />
             <div className="space-y-2 border-l-2 border-line pl-4">
               {cats.filter((c) => c.parent_id === t.id).map((c) => (
                 <div key={c.id}>
@@ -55,6 +56,10 @@ export default async function CategoriesAdmin() {
                   <Row c={c} tops={tops} count={count(c.id)} />
                 </div>
               ))}
+              <div>
+                <p className="mb-1 text-xs font-semibold text-ink-3">Add a subcategory to {t.name}</p>
+                <Row tops={tops} parent={t.id} placeholder={`New subcategory in ${t.name}`} />
+              </div>
             </div>
           </section>
         ))}
