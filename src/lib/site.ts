@@ -6,7 +6,8 @@ export const site = {
   tagline: "Designed and 3D printed in Lebanon",
   url: env("NEXT_PUBLIC_SITE_URL", "https://3dprintlab-lb.com"),
   // WhatsApp number in international format without + or spaces, e.g. 96170123456
-  whatsapp: env("NEXT_PUBLIC_WHATSAPP_NUMBER", "96179499268"),
+  // Shop WhatsApp (country code + number, no + or spaces). Set here so an old Vercel setting can't override it.
+  whatsapp: "96179499268",
   instagram: env("NEXT_PUBLIC_INSTAGRAM", "3dprintlab.lb"),
   facebook: env("NEXT_PUBLIC_FACEBOOK_URL"),
   tiktok: env("NEXT_PUBLIC_TIKTOK_URL"),
