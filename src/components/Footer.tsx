@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { site, whatsappLink } from "@/lib/site";
+import { instagramUrl, site, whatsappLink } from "@/lib/site";
 import Logo from "./Logo";
 import { FacebookIcon, InstagramIcon, TikTokIcon, WhatsAppIcon } from "./Icons";
 
 export default function Footer() {
   const wa = whatsappLink("Hi 3D PrintLab LB, I have a question");
   const social = [
-    site.instagram && { href: `https://instagram.com/${site.instagram}`, label: `@${site.instagram}`, Icon: InstagramIcon },
+    site.instagram && { href: instagramUrl, label: `@${site.instagram}`, Icon: InstagramIcon },
     site.facebook && { href: site.facebook, label: "Facebook", Icon: FacebookIcon },
     site.tiktok && { href: site.tiktok, label: "TikTok", Icon: TikTokIcon },
     wa && { href: wa, label: "WhatsApp", Icon: WhatsAppIcon },
