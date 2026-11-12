@@ -21,4 +21,7 @@ export const whatsappLink = (text: string) =>
 
 export const instagramUrl = `https://www.instagram.com/${site.instagram}/`;
 
+/** A price of 0 means "price on request": the price is hidden and customers order by DM. */
+export const priceOnRequest = (p: { price: number }) => !(p.price > 0);
+
 export const money = (n: number) => `$${(Math.round(n * 100) / 100).toFixed(2).replace(/\.00$/, "")}`;

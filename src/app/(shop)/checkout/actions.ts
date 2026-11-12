@@ -35,6 +35,7 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
   for (const it of input.items) {
     const p = await getProductById(String(it.productId));
     if (!p || !p.active) return { ok: false, error: "An item in your cart is no longer available. Please remove it and try again." };
+    if (!(p.price > 0)) return { ok: false, error: `"${p.name}" is ordered by message. Please remove it from your cart and send us a WhatsApp or Instagram DM.` };
     const qty = Math.max(1, Math.min(99, Math.floor(Number(it.qty) || 1)));
     const personalization = clean(it.personalization, 30);
     if (p.personalizable && !personalization) return { ok: false, error: `Please add the name to print for "${p.name}".` };

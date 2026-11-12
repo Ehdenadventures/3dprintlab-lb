@@ -95,7 +95,7 @@ export default function ProductForm({ product, categories, uploads }: { product:
       </div>
       <div className="field"><label htmlFor="name">Name</label><input id="name" className="input" value={f.name} onChange={set("name")} required /></div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="field"><label htmlFor="price">Price (USD)</label><input id="price" className="input" type="number" min="0" step="0.5" inputMode="decimal" value={f.price} onChange={set("price")} required /></div>
+        <div className="field"><label htmlFor="price">Price (USD)</label><input id="price" className="input" type="number" min="0" step="0.5" inputMode="decimal" value={f.price} onChange={set("price")} required /><p className="mt-1 text-xs text-ink-3">Put 0 to hide the price. Customers then order by WhatsApp or Instagram DM.</p></div>
         <div className="field"><label htmlFor="cat">Category</label>
           <select id="cat" className="input" value={f.category_id} onChange={set("category_id")}>
             <option value="">No category</option>

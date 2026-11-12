@@ -5,9 +5,9 @@ import AddToCart from "@/components/AddToCart";
 import ProductCard, { cover } from "@/components/ProductCard";
 import ProductMedia from "@/components/ProductMedia";
 import { ColourProvider } from "@/components/ColourContext";
-import { WhatsAppIcon } from "@/components/Icons";
+import { InstagramIcon, WhatsAppIcon } from "@/components/Icons";
 import { getCategories, getProductBySlug, getProducts } from "@/lib/data";
-import { money, site, whatsappLink } from "@/lib/site";
+import { money, priceOnRequest, site, whatsappLink } from "@/lib/site";
 import { isSoldOut } from "@/lib/stock";
 
 export const revalidate = 60;
@@ -28,6 +28,8 @@ export default async function ProductPage({ params }: Props) {
   const parent = cat?.parent_id ? cats.find((c) => c.id === cat.parent_id) : null;
   const related = all.filter((x) => x.category_id === p.category_id && x.id !== p.id).slice(0, 4);
   const ask = whatsappLink(`Hi ${site.name}, I have a question about "${p.name}" (${site.url}/p/${p.slug})`);
+  const onRequest = priceOnRequest(p);
+  const order = whatsappLink(`Hi ${site.name}, I'd like to order "${p.name}" (${site.url}/p/${p.slug})`);
 
   return (
     <div className="pt-8">
@@ -41,13 +43,30 @@ export default async function ProductPage({ params }: Props) {
         <ProductMedia media={p.media} name={p.name} colourImages={Object.fromEntries(p.variants.filter((v) => v.image).map((v) => [v.name, v.image!]))} />
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">{p.name}</h1>
-          <p className="mt-2 text-2xl font-bold text-accent">{money(p.price)}</p>
+          {onRequest ? (
+            <p className="mt-2 text-lg font-semibold text-ink-2">Price on request. Send us a message to order.</p>
+          ) : (
+            <p className="mt-2 text-2xl font-bold text-accent">{money(p.price)}</p>
+          )}
           <p className="mt-4 whitespace-pre-line text-ink-2">{p.description}</p>
           {!p.variants.length && p.stock !== null && p.stock > 0 && p.stock <= 5 && (
             <p className="mt-3 text-sm font-semibold text-[#c44a16] dark:text-pink">Only {p.stock} left</p>
           )}
           {isSoldOut(p) ? (
             <p className="mt-6 rounded-xl bg-surface-2 px-4 py-3 font-semibold">Sold out for now. Message us on WhatsApp and we can print one for you.</p>
+          ) : onRequest ? (
+            <div className="mt-6 flex flex-wrap gap-3">
+              {order && (
+                <a href={order} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                  <WhatsAppIcon /> Order on WhatsApp
+                </a>
+              )}
+              {site.instagram && (
+                <a href={`https://ig.me/m/${site.instagram}`} target="_blank" rel="noopener noreferrer" className="btn">
+                  <InstagramIcon /> DM us on Instagram
+                </a>
+              )}
+            </div>
           ) : (
             <AddToCart productId={p.id} slug={p.slug} name={p.name} price={p.price} image={cover(p)} personalizable={p.personalizable} stock={p.stock} colours={p.variants} />
           )}
@@ -56,7 +75,7 @@ export default async function ProductPage({ params }: Props) {
             <li>• Delivery all over Lebanon with Wakilni</li>
             <li>• Want another colour or size? Ask us on WhatsApp</li>
           </ul>
-          {ask && (
+          {ask && !onRequest && (
             <a href={ask} target="_blank" rel="noopener noreferrer" className="btn mt-4">
               <WhatsAppIcon /> Ask about this item
             </a>

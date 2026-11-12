@@ -34,7 +34,7 @@ export default async function ProductsAdmin() {
                 <tr key={p.id} className="hover:bg-surface-2">
                   <td className="p-3 font-semibold"><Link href={`/admin/products/${p.id}`} className="hover:underline">{p.name}</Link></td>
                   <td className="p-3 text-ink-2">{label(p.category_id)}</td>
-                  <td className="p-3 text-right">{money(p.price)}</td>
+                  <td className="p-3 text-right">{p.price > 0 ? money(p.price) : "On request"}</td>
                   <td className="p-3 text-right">
                     {p.variants.length ? (
                       <span title={p.variants.map((v) => `${v.name}: ${v.stock ?? "no limit"}`).join("\n")}>
