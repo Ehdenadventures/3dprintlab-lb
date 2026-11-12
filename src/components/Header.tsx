@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCategories } from "@/lib/data";
-import { site } from "@/lib/site";
+import { instagramUrl, site } from "@/lib/site";
+import { InstagramIcon } from "./Icons";
 import CartButton from "./CartButton";
 import Logo from "./Logo";
 
@@ -22,7 +23,17 @@ export default async function Header() {
             Custom orders
           </Link>
         </nav>
-        <div className="ml-auto md:ml-2">
+        <div className="ml-auto flex items-center gap-1 md:ml-2">
+          <a
+            href={instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Instagram @${site.instagram}`}
+            title={`@${site.instagram} on Instagram`}
+            className="rounded-lg p-2 text-ink-2 hover:bg-surface-2 hover:text-ink"
+          >
+            <InstagramIcon className="h-6 w-6" />
+          </a>
           <CartButton />
         </div>
       </div>
