@@ -2,7 +2,7 @@ import "server-only";
 import seed from "./seed.json";
 import { db } from "./supabase";
 import { cleanVariants } from "./stock";
-import type { Category, Order, OrderItem, OrderStatus, Post, Product } from "./types";
+import type { BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
 
 /*
  * All reads and writes go through this file.
@@ -10,7 +10,7 @@ import type { Category, Order, OrderItem, OrderStatus, Post, Product } from "./t
  * on an in-memory copy of src/lib/seed.json so the site still works.
  */
 
-type Demo = { categories: Category[]; products: Product[]; orders: Order[]; posts: Post[] };
+type Demo = { categories: Category[]; products: Product[]; orders: Order[]; posts: Post[]; settings: Record<string, unknown> };
 const g = globalThis as unknown as { __demo?: Demo };
 function demo(): Demo {
   if (!g.__demo) {
@@ -37,7 +37,7 @@ function demo(): Demo {
       variants: [],
       media: [],
     }));
-    g.__demo = { categories, products, orders: [], posts: [] };
+    g.__demo = { categories, products, orders: [], posts: [], settings: {} };
   }
   return g.__demo;
 }
@@ -364,5 +364,62 @@ export async function deletePost(id: string) {
   const { error } = await s.from("posts").delete().eq("id", id);
   fail(error);
 }
+
+/* ---------------- site settings ---------------- */
+
+/** Shown until a banner is saved in admin > Banner: the 3D printing studio picture, faint, behind every slide. */
+export const DEFAULT_BANNER: BannerSettings = { image: "/banner-studio.jpg", opacity: 20, x: 50, y: 50, all: true, slides: {} };
+
+const pct = (v: unknown, d: number) => {
+  const n = Number(v);
+  return v === null || v === undefined || v === "" || !Number.isFinite(n) ? d : Math.max(0, Math.min(100, Math.round(n)));
+};
+
+function cleanSlideBg(raw: unknown): SlideBackground {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  // A web link, or a picture that ships with the site (e.g. /banner-studio.jpg).
+  const image = typeof r.image === "string" && /^(https?:\/\/|\/[\w.-])/.test(r.image) ? r.image : "";
+  return { image, opacity: pct(r.opacity, 20), x: pct(r.x, 50), y: pct(r.y, 50) };
+}
+
+export function cleanBanner(raw: unknown): BannerSettings {
+  if (raw === undefined || raw === null) return { ...DEFAULT_BANNER };
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const slides: Record<string, SlideBackground> = {};
+  if (r.slides && typeof r.slides === "object")
+    for (const [k, v] of Object.entries(r.slides as Record<string, unknown>).slice(0, 50)) {
+      const s = cleanSlideBg(v);
+      if (s.image) slides[k.slice(0, 64)] = s;
+    }
+  return { ...cleanSlideBg(r), all: !!r.all, slides };
+}
+
+/** The products shown as banner slides: the first 6 with a photo. */
+export const bannerProducts = (products: Product[]) => products.filter((p) => p.media.some((m) => m.type === "image")).slice(0, 6);
+
+async function getSetting(key: string): Promise<unknown> {
+  const s = db();
+  if (!s) return demo().settings[key];
+  const { data, error } = await s.from("settings").select("value").eq("key", key).maybeSingle();
+  // Before supabase/migrations/005_settings.sql is run there is no settings table: use the defaults.
+  if (error && /settings/.test(error.message) && /(does not exist|schema cache)/i.test(error.message)) return undefined;
+  fail(error);
+  return data?.value;
+}
+
+async function saveSetting(key: string, value: unknown) {
+  const s = db();
+  if (!s) {
+    demo().settings[key] = value;
+    return;
+  }
+  const { error } = await s.from("settings").upsert({ key, value, updated_at: new Date().toISOString() });
+  if (error && /settings/.test(error.message) && /(does not exist|schema cache)/i.test(error.message))
+    throw new Error("The database needs a small update first: in Supabase open SQL Editor, paste supabase/migrations/005_settings.sql and press Run. Then save again.");
+  fail(error);
+}
+
+export const getBanner = async () => cleanBanner(await getSetting("banner"));
+export const saveBanner = (b: BannerSettings) => saveSetting("banner", cleanBanner(b));
 
 export type { OrderStatus };
