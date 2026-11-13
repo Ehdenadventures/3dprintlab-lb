@@ -8,7 +8,12 @@ export type SlideBackground = { image: string; opacity: number; x: number; y: nu
 
 /** Pictures behind the home banner: a default for every product slide (and the main slide if `all`),
  *  plus one per slide ("main" or a product id) that replaces the default for that slide. */
-export type BannerSettings = SlideBackground & { all: boolean; slides: Record<string, SlideBackground> };
+export type BannerSettings = SlideBackground & {
+  all: boolean;
+  slides: Record<string, SlideBackground>;
+  /** Strength (0-100) of the default picture behind the whole page; 0 = off. */
+  page: number;
+};
 
 export type Category = {
   id: string;

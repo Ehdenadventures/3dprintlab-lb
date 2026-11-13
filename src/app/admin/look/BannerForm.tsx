@@ -82,7 +82,7 @@ export default function BannerForm({ initial, slides, uploads }: { initial: Bann
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
-  const { all, slides: own, ...base } = b;
+  const { all, slides: own, page: _page, ...base } = b; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   function save() {
     setError(""); setMsg("");
@@ -103,6 +103,17 @@ export default function BannerForm({ initial, slides, uploads }: { initial: Bann
             Also use it behind the first slide
           </label>
         } />
+
+      <section className="space-y-3 rounded-2xl border border-line bg-surface p-4">
+        <h2 className="font-semibold">Behind the whole page</h2>
+        <p className="text-sm text-ink-2">Shows the default picture above very faintly behind every page of the shop. Keep it low so text stays easy to read; 0 turns it off.</p>
+        <div className="field">
+          <label htmlFor="page-strength">Strength: <b>{b.page}%</b></label>
+          <input id="page-strength" type="range" min={0} max={30} step={1} value={b.page} disabled={!base.image}
+            onChange={(e) => setB({ ...b, page: Number(e.target.value) })} className="w-full accent-[var(--accent)] disabled:opacity-40" />
+          <span className="flex justify-between text-xs text-ink-3"><span>off</span><span>30%</span></span>
+        </div>
+      </section>
 
       <h2 className="pt-2 text-lg font-bold">Each slide</h2>
       <p className="text-sm text-ink-2">Upload a picture for a slide to replace the default on that slide only. Remove it to go back to the default.</p>

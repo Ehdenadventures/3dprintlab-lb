@@ -367,8 +367,9 @@ export async function deletePost(id: string) {
 
 /* ---------------- site settings ---------------- */
 
-/** Shown until a banner is saved in admin > Banner: the 3D printing studio picture, faint, behind every slide. */
-export const DEFAULT_BANNER: BannerSettings = { image: "/banner-studio.jpg", opacity: 20, x: 50, y: 50, all: true, slides: {} };
+/** Shown until a banner is saved in admin > Banner: the 3D printing studio picture, faint behind every slide
+ *  and fainter still behind the whole page. */
+export const DEFAULT_BANNER: BannerSettings = { image: "/banner-studio.jpg", opacity: 20, x: 50, y: 50, all: true, slides: {}, page: 6 };
 
 const pct = (v: unknown, d: number) => {
   const n = Number(v);
@@ -391,7 +392,7 @@ export function cleanBanner(raw: unknown): BannerSettings {
       const s = cleanSlideBg(v);
       if (s.image) slides[k.slice(0, 64)] = s;
     }
-  return { ...cleanSlideBg(r), all: !!r.all, slides };
+  return { ...cleanSlideBg(r), all: !!r.all, slides, page: pct(r.page, DEFAULT_BANNER.page) };
 }
 
 /** The products shown as banner slides: the first 6 with a photo. */
