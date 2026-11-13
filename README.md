@@ -75,3 +75,14 @@ Admin > **Instagram posts**: add each Instagram post with the same picture and p
 Customers open `3dprintlab-lb.com/ig` (put it in your Instagram bio), see the posts as a grid, and
 tap one to see and order its items. Each post also has its own link (`/ig/1`, `/ig/2`, ...) for
 story link stickers.
+
+## Google and Meta verification
+
+- `/sitemap.xml` lists the home page, categories, products and Instagram posts. `/robots.txt` points to it
+  and keeps admin, cart, checkout and order pages out of Google.
+- **Google Search Console:** the simplest way is a **Domain** property verified with a DNS TXT record at
+  Namecheap. If you use a **URL prefix** property with the **HTML tag** method instead, put the code in
+  Vercel as `GOOGLE_SITE_VERIFICATION` and redeploy. Then submit `sitemap.xml` under Sitemaps.
+- **Meta domain verification:** in Business Settings > Brand safety > Domains, add `3dprintlab-lb.com`. Use
+  the DNS TXT option, or the **Meta-tag** option with the code in Vercel as `FACEBOOK_DOMAIN_VERIFICATION`
+  (then redeploy).

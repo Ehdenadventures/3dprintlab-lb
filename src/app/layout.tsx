@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   title: { default: `${site.name} | 3D printed sports gear, gadgets and souvenirs`, template: `%s | ${site.name}` },
   description: "3D printed sports gear, everyday items and Lebanese souvenirs. Cash on delivery all over Lebanon.",
   openGraph: { siteName: site.name, type: "website" },
+  // Ownership tags for Google Search Console and Meta (Facebook/Instagram) domain verification.
+  // Paste only the code (the content="..." part) into Vercel > Settings > Environment Variables, then redeploy.
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION && { google: process.env.GOOGLE_SITE_VERIFICATION }),
+    ...(process.env.FACEBOOK_DOMAIN_VERIFICATION && {
+      other: { "facebook-domain-verification": process.env.FACEBOOK_DOMAIN_VERIFICATION },
+    }),
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
