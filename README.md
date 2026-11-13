@@ -33,7 +33,7 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
 ## Going live (one time)
 
 1. **Supabase** (free): create a project at supabase.com. In SQL Editor, run `supabase/schema.sql`,
-   then `supabase/migrations/002_stock.sql` and `003_colours.sql` (stock and colours) and `004_posts.sql` (Instagram posts), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
+   then `supabase/migrations/002_stock.sql`, `003_colours.sql` (stock and colours), `004_posts.sql` (Instagram posts) and `005_settings.sql` (home banner pictures), then `supabase/seed.sql` to load the 57 starting products. Copy the project URL and the
    `service_role` key from Project Settings > API.
 2. **Vercel** (free): import this GitHub repo at vercel.com/new. Add the variables from `.env.example`
    (at least `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP_NUMBER`). Deploy.

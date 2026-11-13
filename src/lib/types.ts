@@ -3,6 +3,13 @@ export type Media = { type: "image" | "video"; url: string };
 /** A colour of a product. stock null = no limit. */
 export type Variant = { name: string; hex: string; stock: number | null; /** photo shown when this colour is picked */ image?: string };
 
+/** A picture behind one banner slide. opacity 0-100; x and y 0-100 = which part of the picture stays in view. */
+export type SlideBackground = { image: string; opacity: number; x: number; y: number };
+
+/** Pictures behind the home banner: a default for every product slide (and the main slide if `all`),
+ *  plus one per slide ("main" or a product id) that replaces the default for that slide. */
+export type BannerSettings = SlideBackground & { all: boolean; slides: Record<string, SlideBackground> };
+
 export type Category = {
   id: string;
   slug: string;

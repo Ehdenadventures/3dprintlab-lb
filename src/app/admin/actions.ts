@@ -4,11 +4,11 @@ import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
   deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
-  takeStock, updateOrder,
+  takeStock, updateOrder, saveBanner,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
 import { cleanVariants } from "@/lib/stock";
-import { ORDER_STATUSES, type Media, type OrderStatus, type Variant } from "@/lib/types";
+import { ORDER_STATUSES, type BannerSettings, type Media, type OrderStatus, type Variant } from "@/lib/types";
 import { sendToWakilni } from "@/lib/wakilni";
 
 const slugify = (s: string) =>
@@ -82,7 +82,7 @@ export async function deleteProductAction(id: string) {
 }
 
 /** Gives the browser a one-time URL to upload a photo or video straight to Supabase Storage. */
-export async function createUploadUrl(fileName: string, folder: "products" | "posts" = "products"): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
+export async function createUploadUrl(fileName: string, folder: "products" | "posts" | "banner" = "products"): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
   await requireAdmin();
   const s = db();
   if (!s) return { error: "Uploads need Supabase. Paste an image URL instead, or connect Supabase." };
@@ -93,6 +93,19 @@ export async function createUploadUrl(fileName: string, folder: "products" | "po
   if (error || !data) return { error: error?.message ?? "Could not create upload URL" };
   const { data: pub } = s.storage.from(MEDIA_BUCKET).getPublicUrl(path);
   return { uploadUrl: data.signedUrl, publicUrl: pub.publicUrl };
+}
+
+/* ---------- look of the shop ---------- */
+
+export async function saveBannerAction(b: BannerSettings): Promise<{ error?: string; ok?: boolean }> {
+  await requireAdmin();
+  try {
+    await saveBanner(b);
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  refreshShop();
+  return { ok: true };
 }
 
 /* ---------- Instagram posts ---------- */

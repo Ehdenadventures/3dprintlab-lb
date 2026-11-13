@@ -1,35 +1,47 @@
 import Link from "next/link";
-import ProductCard from "@/components/ProductCard";
+import ProductCard, { cover } from "@/components/ProductCard";
+import HeroSlider from "@/components/HeroSlider";
 import Logo from "@/components/Logo";
-import { categoryTree, getCategories, getProducts } from "@/lib/data";
-import { site } from "@/lib/site";
+import { bannerProducts, categoryTree, getBanner, getCategories, getProducts } from "@/lib/data";
+import { money, site } from "@/lib/site";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [cats, products] = await Promise.all([getCategories(), getProducts()]);
+  const [cats, products, banner] = await Promise.all([getCategories(), getProducts(), getBanner()]);
   const top = cats.filter((c) => !c.parent_id);
+  // One banner slide per product that has a photo, up to 6 (same list as admin > Banner).
+  const slides = bannerProducts(products).map((p) => ({
+    id: p.id, href: `/p/${p.slug}`, name: p.name, price: money(p.price), image: cover(p)!,
+    label: cats.find((c) => c.id === p.category_id)?.name ?? site.tagline,
+  }));
   return (
     <>
-      <section className="hero-dark -mx-4 mt-6 overflow-hidden rounded-3xl border border-line bg-[#283189] px-6 py-12 text-white sm:mx-0 sm:px-12 sm:py-16">
-        <div className="flex items-center justify-between gap-8">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#ff8a52]">{site.tagline}</p>
-            <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">
-              Sports gear, everyday tools and Lebanese souvenirs, <span className="highlight">built layer by layer.</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-[#dfe1f5]">Order online and pay cash when it arrives. Delivery all over Lebanon.</p>
-            <p lang="ar" dir="rtl" className="mt-2 w-fit text-[#dfe1f5]" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
-              اطلب أونلاين واِدفع عند الاستلام
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href={`/c/${top[0]?.slug ?? ""}`} className="btn btn-pink">Shop now</Link>
-              <Link href="/custom" className="btn btn-ghost-dark">Request a custom print</Link>
+      <HeroSlider
+        background={banner}
+        products={slides}
+        main={
+          <div className="min-h-[420px] px-6 py-12 sm:px-12 sm:py-16">
+            <div className="flex items-center justify-between gap-8">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#ff8a52]">{site.tagline}</p>
+                <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">
+                  Sports gear, everyday tools and Lebanese souvenirs, <span className="highlight">built layer by layer.</span>
+                </h1>
+                <p className="mt-5 max-w-xl text-[#dfe1f5]">Order online and pay cash when it arrives. Delivery all over Lebanon.</p>
+                <p lang="ar" dir="rtl" className="mt-2 w-fit text-[#dfe1f5]" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
+                  اطلب أونلاين واِدفع عند الاستلام
+                </p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link href={`/c/${top[0]?.slug ?? ""}`} className="btn btn-pink">Shop now</Link>
+                  <Link href="/custom" className="btn btn-ghost-dark">Request a custom print</Link>
+                </div>
+              </div>
+              <div className="hidden shrink-0 lg:block"><Logo height={52} onDark /></div>
             </div>
           </div>
-          <div className="hidden shrink-0 lg:block"><Logo height={52} onDark /></div>
-        </div>
-      </section>
+        }
+      />
 
       <section className="mt-12 grid gap-4 sm:grid-cols-3" aria-label="Categories">
         {top.map((c) => {
