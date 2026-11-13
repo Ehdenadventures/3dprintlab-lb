@@ -1,8 +1,9 @@
 import Link from "next/link";
-import ProductCard, { cover } from "@/components/ProductCard";
+import ProductCard from "@/components/ProductCard";
+import { bannerSlides } from "@/lib/banner";
 import HeroSlider from "@/components/HeroSlider";
 import Logo from "@/components/Logo";
-import { bannerProducts, categoryTree, getBanner, getCategories, getProducts } from "@/lib/data";
+import { categoryTree, getBanner, getCategories, getProducts } from "@/lib/data";
 import { money, site } from "@/lib/site";
 
 export const revalidate = 60;
@@ -10,9 +11,9 @@ export const revalidate = 60;
 export default async function Home() {
   const [cats, products, banner] = await Promise.all([getCategories(), getProducts(), getBanner()]);
   const top = cats.filter((c) => !c.parent_id);
-  // One banner slide per product that has a photo, up to 6 (same list as admin > Banner).
-  const slides = bannerProducts(products).map((p) => ({
-    id: p.id, href: `/p/${p.slug}`, name: p.name, price: money(p.price), image: cover(p)!,
+  // The products picked in admin > Banner (or the first 6 with a photo), each with its chosen photo.
+  const slides = bannerSlides(products, banner.products).map(({ product: p, image }) => ({
+    id: p.id, href: `/p/${p.slug}`, name: p.name, price: money(p.price), image,
     label: cats.find((c) => c.id === p.category_id)?.name ?? site.tagline,
   }));
   return (

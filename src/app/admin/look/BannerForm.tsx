@@ -1,11 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import { useState, useTransition } from "react";
-import type { BannerSettings, SlideBackground } from "@/lib/types";
+import type { BannerPick, BannerSettings, SlideBackground } from "@/lib/types";
+import { bannerSlides, MAX_BANNER_PRODUCTS } from "@/lib/banner";
 import { Backdrop, slideBackground } from "@/components/HeroSlider";
 import { createUploadUrl, saveBannerAction } from "../actions";
 
-type Slide = { key: string; label: string; photo?: string };
+type Choice = { id: string; name: string; photos: string[] };
 /** The picture that ships with the site (public/banner-studio.jpg). */
 const STUDIO = "/banner-studio.jpg";
 const EMPTY: SlideBackground = { image: "", opacity: 20, x: 50, y: 50 };
@@ -77,12 +78,83 @@ function BackgroundEditor({ title, value, onChange, preview, photo, uploads, not
   );
 }
 
-export default function BannerForm({ initial, slides, uploads }: { initial: BannerSettings; slides: Slide[]; uploads: boolean }) {
+/** Pick the products shown as banner slides, their order and the photo each one shows. */
+function ProductPicker({ value, onChange, products }: { value: BannerPick[]; onChange: (v: BannerPick[]) => void; products: Choice[] }) {
+  const withPhoto = products.filter((p) => p.photos.length);
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const addable = withPhoto.filter((p) => !value.some((v) => v.id === p.id));
+  const move = (i: number, d: number) => {
+    const next = [...value];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    onChange(next);
+  };
+  return (
+    <section className="space-y-3 rounded-2xl border border-line bg-surface p-4">
+      <h2 className="font-semibold">Products in the banner</h2>
+      <p className="text-sm text-ink-2">
+        {value.length
+          ? "These products get a slide, in this order. Tap a photo to choose which one shows."
+          : "None chosen yet, so the banner shows the first 6 products that have a photo. Add products below to choose them yourself."}
+      </p>
+      <ol className="space-y-3">
+        {value.map((pick, i) => {
+          const p = byId.get(pick.id);
+          const photos = p?.photos ?? [];
+          const current = photos.includes(pick.image) ? pick.image : photos[0];
+          return (
+            <li key={pick.id} className="rounded-xl border border-line p-3">
+              <div className="flex items-center gap-2">
+                <span className="w-6 shrink-0 text-sm font-bold text-ink-3">{i + 1}.</span>
+                <p className="min-w-0 flex-1 truncate font-semibold">{p?.name ?? "Product no longer in the shop"}</p>
+                <button type="button" className="btn px-2.5 py-1 text-sm" aria-label={`Move ${p?.name ?? "product"} up`} disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+                <button type="button" className="btn px-2.5 py-1 text-sm" aria-label={`Move ${p?.name ?? "product"} down`} disabled={i === value.length - 1} onClick={() => move(i, 1)}>↓</button>
+                <button type="button" className="px-1 text-sm text-bad" onClick={() => onChange(value.filter((_, k) => k !== i))}>Remove</button>
+              </div>
+              {photos.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2 pl-8" role="radiogroup" aria-label={`Photo for ${p?.name}`}>
+                  {photos.map((url, k) => (
+                    <button key={url} type="button" role="radio" aria-checked={url === current} aria-label={`Photo ${k + 1}`}
+                      onClick={() => onChange(value.map((v, j) => (j === i ? { ...v, image: url } : v)))}
+                      className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${url === current ? "border-accent" : "border-transparent opacity-70 hover:opacity-100"}`}>
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-1 pl-8 text-xs text-ink-3">Hidden or without a photo, so it is skipped on the banner.</p>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      {value.length < MAX_BANNER_PRODUCTS ? (
+        addable.length > 0 && (
+          <select className="input" aria-label="Add a product to the banner" value=""
+            onChange={(e) => e.target.value && onChange([...value, { id: e.target.value, image: "" }])}>
+            <option value="">+ Add a product…</option>
+            {addable.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        )
+      ) : (
+        <p className="text-xs text-ink-3">The banner shows at most {MAX_BANNER_PRODUCTS} products.</p>
+      )}
+      {!withPhoto.length && <p className="text-xs text-ink-3">Products appear here once they have a photo.</p>}
+      {value.length > 0 && <button type="button" className="text-sm text-ink-2 underline" onClick={() => onChange([])}>Go back to automatic (first 6 with a photo)</button>}
+    </section>
+  );
+}
+
+export default function BannerForm({ initial, products, uploads }: { initial: BannerSettings; products: Choice[]; uploads: boolean }) {
   const [b, setB] = useState(initial);
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
-  const { all, slides: own, page: _page, ...base } = b; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { all, slides: own, page: _page, products: _picks, ...base } = b; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const media = (p: Choice) => p.photos.map((url) => ({ type: "image" as const, url }));
+  const slides = [
+    { key: "main", label: "First slide (logo and welcome text)", photo: undefined as string | undefined },
+    ...bannerSlides(products.map((p) => ({ ...p, media: media(p) })), b.products).map(({ product, image }) => ({ key: product.id, label: product.name, photo: image })),
+  ];
 
   function save() {
     setError(""); setMsg("");
@@ -115,7 +187,9 @@ export default function BannerForm({ initial, slides, uploads }: { initial: Bann
         </div>
       </section>
 
-      <h2 className="pt-2 text-lg font-bold">Each slide</h2>
+      <ProductPicker value={b.products} products={products} onChange={(v) => setB({ ...b, products: v })} />
+
+      <h2 className="pt-2 text-lg font-bold">Background of each slide</h2>
       <p className="text-sm text-ink-2">Upload a picture for a slide to replace the default on that slide only. Remove it to go back to the default.</p>
       {slides.map((s) => (
         <BackgroundEditor key={s.key} title={s.label} photo={s.photo} uploads={uploads}
@@ -127,7 +201,7 @@ export default function BannerForm({ initial, slides, uploads }: { initial: Bann
             setB({ ...b, slides: next });
           }} />
       ))}
-      {slides.length === 1 && <p className="text-sm text-ink-3">Products appear here once they have a photo (the banner shows the first 6).</p>}
+      
 
       <div className="sticky bottom-0 -mx-4 flex items-center gap-3 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur">
         <button type="button" className="btn btn-primary" onClick={save} disabled={pending}>{pending ? "Saving..." : "Save banner"}</button>

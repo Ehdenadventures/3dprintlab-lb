@@ -13,7 +13,13 @@ export type BannerSettings = SlideBackground & {
   slides: Record<string, SlideBackground>;
   /** Strength (0-100) of the default picture behind the whole page; 0 = off. */
   page: number;
+  /** Products picked for the banner, in slide order, each with the photo to show.
+   *  Empty = automatic (the first 6 products that have a photo). */
+  products: BannerPick[];
 };
+
+/** One product chosen for the banner. image "" = the product's first photo. */
+export type BannerPick = { id: string; image: string };
 
 export type Category = {
   id: string;
