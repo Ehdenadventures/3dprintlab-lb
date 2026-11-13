@@ -2,7 +2,8 @@ import "server-only";
 import seed from "./seed.json";
 import { db } from "./supabase";
 import { cleanVariants } from "./stock";
-import type { BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
+import { MAX_BANNER_PRODUCTS } from "./banner";
+import type { BannerPick, BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
 
 /*
  * All reads and writes go through this file.
@@ -369,7 +370,7 @@ export async function deletePost(id: string) {
 
 /** Shown until a banner is saved in admin > Banner: the 3D printing studio picture, faint behind every slide
  *  and fainter still behind the whole page. */
-export const DEFAULT_BANNER: BannerSettings = { image: "/banner-studio.jpg", opacity: 20, x: 50, y: 50, all: true, slides: {}, page: 6 };
+export const DEFAULT_BANNER: BannerSettings = { image: "/banner-studio.jpg", opacity: 20, x: 50, y: 50, all: true, slides: {}, page: 6, products: [] };
 
 const pct = (v: unknown, d: number) => {
   const n = Number(v);
@@ -392,11 +393,19 @@ export function cleanBanner(raw: unknown): BannerSettings {
       const s = cleanSlideBg(v);
       if (s.image) slides[k.slice(0, 64)] = s;
     }
-  return { ...cleanSlideBg(r), all: !!r.all, slides, page: pct(r.page, DEFAULT_BANNER.page) };
+  const products: BannerPick[] = [];
+  if (Array.isArray(r.products))
+    for (const v of r.products as unknown[]) {
+      const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+      const id = typeof o.id === "string" ? o.id.slice(0, 64) : "";
+      if (!id || products.some((x) => x.id === id)) continue;
+      const image = typeof o.image === "string" && /^(https?:\/\/|\/[\w.-])/.test(o.image) ? o.image : "";
+      products.push({ id, image });
+      if (products.length >= MAX_BANNER_PRODUCTS) break;
+    }
+  return { ...cleanSlideBg(r), all: !!r.all, slides, page: pct(r.page, DEFAULT_BANNER.page), products };
 }
 
-/** The products shown as banner slides: the first 6 with a photo. */
-export const bannerProducts = (products: Product[]) => products.filter((p) => p.media.some((m) => m.type === "image")).slice(0, 6);
 
 async function getSetting(key: string): Promise<unknown> {
   const s = db();
