@@ -2,7 +2,7 @@ import Link from "next/link";
 import { logoutAction } from "./actions";
 import { isDemo } from "@/lib/data";
 
-export default function AdminNav({ active }: { active: "orders" | "products" | "categories" | "posts" | "look" }) {
+export default function AdminNav({ active }: { active: "orders" | "products" | "categories" | "posts" | "look" | "home" }) {
   const tab = (href: string, key: string, label: string) => (
     <Link href={href} className={`rounded-lg px-3 py-2 text-sm font-semibold ${active === key ? "bg-accent-soft text-accent" : "text-ink-2 hover:bg-surface-2"}`}>{label}</Link>
   );
@@ -15,6 +15,7 @@ export default function AdminNav({ active }: { active: "orders" | "products" | "
           {tab("/admin/products", "products", "Products")}
           {tab("/admin/categories", "categories", "Categories")}
           {tab("/admin/posts", "posts", "Instagram posts")}
+          {tab("/admin/home", "home", "Home page")}
           {tab("/admin/look", "look", "Banner")}
           <div className="ml-auto flex items-center gap-2">
             <Link href="/" className="text-sm text-ink-2 hover:text-ink" target="_blank">View shop ↗</Link>

@@ -3,6 +3,7 @@ import seed from "./seed.json";
 import { db } from "./supabase";
 import { cleanVariants } from "./stock";
 import { MAX_BANNER_PRODUCTS } from "./banner";
+import { cleanHome, type HomeSettings } from "./home";
 import type { BannerPick, BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
 
 /*
@@ -152,20 +153,7 @@ export async function deleteProduct(id: string) {
   fail(error);
 }
 
-/** Every category id at or below `rootId` (a main category includes its subcategories). */
-export function categoryTree(categories: Category[], rootId: string): Set<string> {
-  const ids = new Set([rootId]);
-  let grew = true;
-  while (grew) {
-    grew = false;
-    for (const c of categories)
-      if (c.parent_id && ids.has(c.parent_id) && !ids.has(c.id)) {
-        ids.add(c.id);
-        grew = true;
-      }
-  }
-  return ids;
-}
+export { categoryTree } from "./home";
 
 /* ---------------- stock ---------------- */
 
@@ -433,3 +421,6 @@ export const getBanner = async () => cleanBanner(await getSetting("banner"));
 export const saveBanner = (b: BannerSettings) => saveSetting("banner", cleanBanner(b));
 
 export type { OrderStatus };
+
+export const getHome = async () => cleanHome(await getSetting("home"));
+export const saveHome = (h: HomeSettings) => saveSetting("home", cleanHome(h));

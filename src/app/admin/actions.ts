@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
   deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
-  takeStock, updateOrder, saveBanner,
+  takeStock, updateOrder, saveBanner, saveHome,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
 import { cleanVariants } from "@/lib/stock";
 import { ORDER_STATUSES, type BannerSettings, type Media, type OrderStatus, type Variant } from "@/lib/types";
 import { sendToWakilni } from "@/lib/wakilni";
+import type { HomeSettings } from "@/lib/home";
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
@@ -101,6 +102,17 @@ export async function saveBannerAction(b: BannerSettings): Promise<{ error?: str
   await requireAdmin();
   try {
     await saveBanner(b);
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  refreshShop();
+  return { ok: true };
+}
+
+export async function saveHomeAction(h: HomeSettings): Promise<{ error?: string; ok?: boolean }> {
+  await requireAdmin();
+  try {
+    await saveHome(h);
   } catch (e) {
     return { error: (e as Error).message };
   }
