@@ -88,3 +88,27 @@ body {
 }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* scrolling band of category names under the home banner */
+.band-track { display: flex; width: max-content; animation: band-scroll linear infinite; }
+.band-row { display: flex; align-items: center; padding-right: .5rem; }
+.band:hover .band-track, .band:focus-within .band-track { animation-play-state: paused; }
+@keyframes band-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .band { overflow-x: auto; }
+  .band-track { animation: none; }
+  .band-row[aria-hidden] { display: none; }
+}
+
+/* category cards on the home page: lifted off a tinted panel so they stand apart from the page */
+.cat-panel {
+  background:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 7%, transparent) 0 2px, transparent 2px 9px),
+    color-mix(in srgb, var(--accent-soft) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.cat-card {
+  box-shadow: 0 1px 2px rgb(22 26 51 / .08), 0 10px 24px -12px rgb(40 49 137 / .45);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+}
+.cat-card:hover { box-shadow: 0 2px 4px rgb(22 26 51 / .1), 0 16px 32px -12px rgb(40 49 137 / .6); }

@@ -1,15 +1,22 @@
 import Link from "next/link";
-import ProductCard from "@/components/ProductCard";
+import ProductCard, { cover } from "@/components/ProductCard";
+import CategoryBand from "@/components/CategoryBand";
+import { CubeIcon } from "@/components/Icons";
+import { homeLayout, sectionProducts } from "@/lib/home";
 import { bannerSlides } from "@/lib/banner";
 import HeroSlider from "@/components/HeroSlider";
 import Logo from "@/components/Logo";
-import { categoryTree, getBanner, getCategories, getProducts } from "@/lib/data";
+import { categoryTree, getBanner, getCategories, getHome, getProducts } from "@/lib/data";
 import { money, site } from "@/lib/site";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [cats, products, banner] = await Promise.all([getCategories(), getProducts(), getBanner()]);
+  const [cats, products, banner, home] = await Promise.all([getCategories(), getProducts(), getBanner(), getHome()]);
+  // The category sections chosen in admin > Home page, in that order, each with its products.
+  const sections = homeLayout(cats, home)
+    .filter((s) => s.show)
+    .map((s) => ({ c: cats.find((c) => c.id === s.id)!, ...sectionProducts(s, cats, products) }));
   const top = cats.filter((c) => !c.parent_id);
   // The products picked in admin > Banner (or the first 6 with a photo), each with its chosen photo.
   const slides = bannerSlides(products, banner.products).map(({ product: p, image }) => ({
@@ -34,7 +41,7 @@ export default async function Home() {
                   اطلب أونلاين واِدفع عند الاستلام
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <Link href={`/c/${top[0]?.slug ?? ""}`} className="btn btn-pink">Shop now</Link>
+                  <Link href={`/c/${sections[0]?.c.slug ?? top[0]?.slug ?? ""}`} className="btn btn-pink">Shop now</Link>
                   <Link href="/custom" className="btn btn-ghost-dark">Request a custom print</Link>
                 </div>
               </div>
@@ -44,25 +51,42 @@ export default async function Home() {
         }
       />
 
-      <section className="mt-12 grid gap-4 sm:grid-cols-3" aria-label="Categories">
-        {top.map((c) => {
-          const ids = categoryTree(cats, c.id);
-          const n = products.filter((p) => p.category_id && ids.has(p.category_id)).length;
-          const subs = cats.filter((s) => s.parent_id === c.id);
-          return (
-            <Link key={c.id} href={`/c/${c.slug}`} className="rounded-2xl border border-line bg-surface p-5 transition hover:border-ink-3">
-              <h2 className="text-xl font-bold">{c.name}</h2>
-              <p className="mt-1 text-sm text-ink-2">{c.description}</p>
-              <p className="mt-3 text-xs text-ink-3">{subs.map((s) => s.name).join(" · ")}</p>
-              <p className="mt-3 text-sm font-semibold text-accent">{n} items →</p>
-            </Link>
-          );
-        })}
-      </section>
+      {home.band && <CategoryBand categories={cats} />}
 
-      {top.map((c) => {
-        const ids = categoryTree(cats, c.id);
-        const items = products.filter((p) => p.category_id && ids.has(p.category_id)).slice(0, 4);
+      {sections.length > 0 && (
+        <section className="cat-panel mt-10 rounded-3xl p-4 sm:p-6" aria-labelledby="shop-by-category">
+          <h2 id="shop-by-category" className="mb-4 text-sm font-bold uppercase tracking-[0.2em] text-accent">Shop by category</h2>
+          <div className={`grid gap-4 sm:grid-cols-2 ${sections.length % 4 === 0 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+            {sections.map(({ c, items, total }) => {
+              const subs = cats.filter((s) => s.parent_id === c.id);
+              const img = [...items, ...products.filter((p) => p.category_id && categoryTree(cats, c.id).has(p.category_id))].map(cover).find(Boolean);
+              return (
+                <Link key={c.id} href={`/c/${c.slug}`} className="cat-card group flex flex-col overflow-hidden rounded-2xl bg-surface transition hover:-translate-y-0.5">
+                  <div className="relative h-28 overflow-hidden bg-[#283189]">
+                    {img ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={img} alt="" loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105 group-hover:opacity-100" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-[repeating-linear-gradient(0deg,rgb(255_255_255/.08)_0_3px,transparent_3px_10px)] text-[#ff8a52]">
+                        <CubeIcon className="h-12 w-12" />
+                      </div>
+                    )}
+                    <span className="absolute inset-x-0 bottom-0 h-1 bg-[#ed632c]" />
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
+                    <h3 className="text-lg font-bold">{c.name}</h3>
+                    {c.description && <p className="mt-1 text-sm text-ink-2">{c.description}</p>}
+                    {subs.length > 0 && <p className="mt-2 text-xs text-ink-3">{subs.map((s) => s.name).join(" · ")}</p>}
+                    <p className="mt-auto pt-3 text-sm font-semibold text-[#c44a16] dark:text-[#ff8a52]">{total} items →</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {sections.map(({ c, items }) => {
         if (!items.length) return null;
         return (
           <section key={c.id} className="mt-12">
