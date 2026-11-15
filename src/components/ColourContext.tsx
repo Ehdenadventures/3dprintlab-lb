@@ -1,12 +1,14 @@
 "use client";
 import { createContext, useContext, useState } from "react";
 
-/** Shares the chosen colour between the colour picker and the product photos. */
-const Ctx = createContext<{ colour: string; setColour: (c: string) => void } | null>(null);
+/** Shares the chosen colour and filament type between the pickers, the price and the product photos. */
+type Choice = { colour: string; setColour: (c: string) => void; material: string; setMaterial: (m: string) => void };
+const Ctx = createContext<Choice | null>(null);
 
-export function ColourProvider({ initial, children }: { initial: string; children: React.ReactNode }) {
+export function ColourProvider({ initial, initialMaterial = "", children }: { initial: string; initialMaterial?: string; children: React.ReactNode }) {
   const [colour, setColour] = useState(initial);
-  return <Ctx.Provider value={{ colour, setColour }}>{children}</Ctx.Provider>;
+  const [material, setMaterial] = useState(initialMaterial);
+  return <Ctx.Provider value={{ colour, setColour, material, setMaterial }}>{children}</Ctx.Provider>;
 }
 
 export const useColour = () => useContext(Ctx);

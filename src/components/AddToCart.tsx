@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import type { Variant } from "@/lib/types";
+import type { Material, Variant } from "@/lib/types";
+import { money } from "@/lib/site";
+import { extraLabel, unitPrice } from "@/lib/stock";
 import { useCart } from "./CartProvider";
 import { useColour } from "./ColourContext";
 
@@ -10,6 +12,7 @@ type Props = {
   /** Stock when the product has no colours. null = no limit. */
   stock: number | null;
   colours: Variant[];
+  materials?: Material[];
 };
 
 export default function AddToCart(p: Props) {
@@ -20,15 +23,44 @@ export default function AddToCart(p: Props) {
   const local = useState(p.colours.find((c) => c.stock !== 0)?.name ?? "");
   const shared = useColour();
   const [colour, setColour] = shared ? [shared.colour, shared.setColour] : local;
+  const materials = p.materials ?? [];
+  const localMat = useState(materials[0]?.name ?? "");
+  const [material, setMaterial] = shared ? [shared.material, shared.setMaterial] : localMat;
+  const chosenMat = materials.find((m) => m.name === material);
+  const price = unitPrice({ price: p.price, variants: p.colours, materials }, colour, chosenMat?.name);
 
   const chosen = p.colours.find((c) => c.name === colour);
   const left = p.colours.length ? (chosen ? chosen.stock : 0) : p.stock;
   const max = Math.min(99, left ?? 99);
   const needsText = p.personalizable && !text.trim();
-  const blocked = needsText || (p.colours.length > 0 && !chosen) || left === 0;
+  const blocked = needsText || (p.colours.length > 0 && !chosen) || (materials.length > 0 && !chosenMat) || left === 0;
 
   return (
     <div className="mt-6 space-y-4">
+      {materials.length > 0 && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold">
+            Filament: <span className="font-normal text-ink-2">{material || "choose one"}</span>
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {materials.map((m) => {
+              const on = m.name === material;
+              return (
+                <button
+                  key={m.name}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => { setMaterial(m.name); setAdded(false); }}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition ${on ? "border-accent ring-2 ring-accent" : "border-line hover:border-ink-3"}`}
+                >
+                  {m.name}
+                  {extraLabel(m.extra) && <span className="ml-1.5 text-ink-3">{extraLabel(m.extra)}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
       {p.colours.length > 0 && (
         <fieldset>
           <legend className="mb-2 text-sm font-semibold">
@@ -50,6 +82,7 @@ export default function AddToCart(p: Props) {
                 >
                   <span className="h-5 w-5 rounded-full border border-line" style={{ background: c.hex }} />
                   {c.name}
+                  {extraLabel(c.extra) && <span className="text-ink-3">{extraLabel(c.extra)}</span>}
                 </button>
               );
             })}
@@ -76,11 +109,11 @@ export default function AddToCart(p: Props) {
           className="btn btn-primary flex-1"
           disabled={blocked}
           onClick={() => {
-            add({ productId: p.productId, slug: p.slug, name: p.name, price: p.price, image: chosen?.image ?? p.image, personalization: text, colour: chosen?.name }, qty);
+            add({ productId: p.productId, slug: p.slug, name: p.name, price, image: chosen?.image ?? p.image, personalization: text, colour: chosen?.name, material: chosenMat?.name }, qty);
             setAdded(true);
           }}
         >
-          Add to cart
+          Add to cart{(materials.length > 0 || p.colours.some((c) => c.extra)) && ` · ${money(price * qty)}`}
         </button>
       </div>
       {added && (

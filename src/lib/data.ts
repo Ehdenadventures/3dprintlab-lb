@@ -1,7 +1,7 @@
 import "server-only";
 import seed from "./seed.json";
 import { db } from "./supabase";
-import { cleanVariants } from "./stock";
+import { cleanMaterials, cleanVariants } from "./stock";
 import { MAX_BANNER_PRODUCTS } from "./banner";
 import { cleanHome, type HomeSettings } from "./home";
 import type { BannerPick, BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
@@ -37,6 +37,7 @@ function demo(): Demo {
       sort: p.sort,
       stock: null,
       variants: [],
+      materials: [],
       media: [],
     }));
     g.__demo = { categories, products, orders: [], posts: [], settings: {} };
@@ -46,9 +47,10 @@ function demo(): Demo {
 
 export const isDemo = () => db() === null;
 
-const num = <T extends { price?: unknown; stock?: unknown; variants?: unknown }>(r: T) => ({
+const num = <T extends { price?: unknown; stock?: unknown; variants?: unknown; materials?: unknown }>(r: T) => ({
   ...r,
   variants: cleanVariants(r.variants),
+  materials: cleanMaterials(r.materials),
   price: Number(r.price),
   stock: r.stock == null ? null : Number(r.stock),
 });
@@ -139,7 +141,16 @@ export async function saveProduct(p: Omit<Product, "id"> & { id?: string }) {
     return;
   }
   const { id, ...rest } = p;
-  const { error } = id ? await s.from("products").update(rest).eq("id", id) : await s.from("products").insert(rest);
+  const write = (row: Partial<typeof rest>) => (id ? s.from("products").update(row).eq("id", id) : s.from("products").insert(row));
+  let { error } = await write(rest);
+  // Before supabase/migrations/006_filament_types.sql is run there is no materials column.
+  if (error && /materials/.test(error.message) && /(does not exist|schema cache|column)/i.test(error.message)) {
+    if (rest.materials?.length)
+      throw new Error("The database needs a small update before you can add filament types: in Supabase open SQL Editor, paste supabase/migrations/006_filament_types.sql and press Run. Then save again.");
+    const { materials: _skip, ...old } = rest;
+    void _skip;
+    ({ error } = await write(old));
+  }
   fail(error);
 }
 

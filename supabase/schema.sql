@@ -29,6 +29,8 @@ create table if not exists products (
   stock int check (stock is null or stock >= 0),
   -- colours: list of {"name": "Red", "hex": "#e53935", "stock": 5 | null}
   variants jsonb not null default '[]'::jsonb,
+  -- filament types: list of {"name": "PETG", "extra": 2}; extra is added to the price
+  materials jsonb not null default '[]'::jsonb,
   -- list of {"type": "image" | "video", "url": "..."}; the first image is the cover
   media jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { priceLabel } from "@/lib/stock";
 import ProductCard, { cover } from "@/components/ProductCard";
 import CategoryBand from "@/components/CategoryBand";
 import { CubeIcon } from "@/components/Icons";
@@ -7,7 +8,7 @@ import { bannerSlides } from "@/lib/banner";
 import HeroSlider from "@/components/HeroSlider";
 import Logo from "@/components/Logo";
 import { categoryTree, getBanner, getCategories, getHome, getProducts } from "@/lib/data";
-import { money, site } from "@/lib/site";
+import { site } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -20,7 +21,7 @@ export default async function Home() {
   const top = cats.filter((c) => !c.parent_id);
   // The products picked in admin > Banner (or the first 6 with a photo), each with its chosen photo.
   const slides = bannerSlides(products, banner.products).map(({ product: p, image }) => ({
-    id: p.id, href: `/p/${p.slug}`, name: p.name, price: money(p.price), image,
+    id: p.id, href: `/p/${p.slug}`, name: p.name, price: priceLabel(p), image,
     label: cats.find((c) => c.id === p.category_id)?.name ?? site.tagline,
   }));
   return (

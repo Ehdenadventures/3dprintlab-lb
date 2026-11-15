@@ -2,10 +2,17 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import type { Media, Product } from "@/lib/types";
+import { extraLabel } from "@/lib/stock";
+import { money } from "@/lib/site";
 import { createUploadUrl, deleteProductAction, saveProductAction } from "../../actions";
 
 type Opt = { id: string; label: string };
-type ColourRow = { name: string; hex: string; stock: string; image: string };
+type ColourRow = { name: string; hex: string; stock: string; image: string; extra: string };
+type MaterialRow = { name: string; extra: string };
+
+const FILAMENTS = ["PLA", "PETG", "Silk PLA", "Matte PLA", "Marble PLA", "Glow in the dark", "TPU (flexible)", "ABS"];
+const extraText = (n?: number) => (n ? String(n) : "");
+const extraNum = (s: string) => (s.trim() === "" || !Number.isFinite(Number(s)) ? 0 : Number(s));
 
 const PRESETS: [string, string][] = [
   ["Black", "#1c1c1c"], ["White", "#f4f4f4"], ["Grey", "#8a8d93"], ["Red", "#d32f2f"], ["Orange", "#ed632c"],
@@ -27,13 +34,25 @@ export default function ProductForm({ product, categories, uploads }: { product:
   });
   const [media, setMedia] = useState<Media[]>(product?.media ?? []);
   const [colours, setColours] = useState<ColourRow[]>(
-    (product?.variants ?? []).map((v) => ({ name: v.name, hex: v.hex, stock: v.stock == null ? "" : String(v.stock), image: v.image ?? "" })),
+    (product?.variants ?? []).map((v) => ({ name: v.name, hex: v.hex, stock: v.stock == null ? "" : String(v.stock), image: v.image ?? "", extra: extraText(v.extra) })),
   );
+  const [materials, setMaterials] = useState<MaterialRow[]>((product?.materials ?? []).map((m) => ({ name: m.name, extra: extraText(m.extra) })));
+  const setMaterial = (i: number, patch: Partial<MaterialRow>) => setMaterials((m) => m.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addMaterial = (name = "") => {
+    if (name && materials.some((m) => m.name.toLowerCase() === name.toLowerCase())) return;
+    setMaterials((m) => [...m, { name, extra: "" }]);
+  };
+  /** What the customer pays with this extra, shown next to each option. */
+  const priceWith = (extra: string) => {
+    const base = Number(f.price);
+    if (!Number.isFinite(base) || f.price.trim() === "" || extraNum(extra) === 0) return "";
+    return `${extraLabel(extraNum(extra))} = ${money(Math.max(0, base + extraNum(extra)))}`;
+  };
   const images = media.filter((m) => m.type === "image");
   const setColour = (i: number, patch: Partial<ColourRow>) => setColours((c) => c.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const addColour = (name = "", hex = "#888888") => {
     if (name && colours.some((c) => c.name.toLowerCase() === name.toLowerCase())) return;
-    setColours((c) => [...c, { name, hex, stock: "", image: "" }]);
+    setColours((c) => [...c, { name, hex, stock: "", image: "", extra: "" }]);
   };
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -80,7 +99,8 @@ export default function ProductForm({ product, categories, uploads }: { product:
         id: product?.id, name: f.name, slug: f.slug, description: f.description, price: Number(f.price),
         category_id: f.category_id || null, active: f.active, personalizable: f.personalizable, sort: Number(f.sort),
         stock: colours.length || f.stock.trim() === "" ? null : Number(f.stock),
-        variants: colours.filter((c) => c.name.trim()).map((c) => ({ name: c.name.trim(), hex: c.hex, stock: c.stock.trim() === "" ? null : Number(c.stock), image: media.some((m) => m.url === c.image) ? c.image : undefined })),
+        variants: colours.filter((c) => c.name.trim()).map((c) => ({ name: c.name.trim(), hex: c.hex, stock: c.stock.trim() === "" ? null : Number(c.stock), image: media.some((m) => m.url === c.image) ? c.image : undefined, extra: extraNum(c.extra) })),
+        materials: materials.filter((m) => m.name.trim()).map((m) => ({ name: m.name.trim(), extra: extraNum(m.extra) })),
         media,
       });
       if (res?.error) setError(res.error);
@@ -95,7 +115,9 @@ export default function ProductForm({ product, categories, uploads }: { product:
       </div>
       <div className="field"><label htmlFor="name">Name</label><input id="name" className="input" value={f.name} onChange={set("name")} required /></div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="field"><label htmlFor="price">Price (USD)</label><input id="price" className="input" type="number" min="0" step="0.5" inputMode="decimal" value={f.price} onChange={set("price")} required /></div>
+        <div className="field"><label htmlFor="price">Price (USD)</label><input id="price" className="input" type="number" min="0" step="0.5" inputMode="decimal" value={f.price} onChange={set("price")} required />
+          {(materials.length > 0 || colours.some((c) => extraNum(c.extra) !== 0)) && <span className="text-xs text-ink-3">Base price. Filament types and colours below can add to it.</span>}
+        </div>
         <div className="field"><label htmlFor="cat">Category</label>
           <select id="cat" className="input" value={f.category_id} onChange={set("category_id")}>
             <option value="">No category</option>
@@ -108,16 +130,24 @@ export default function ProductForm({ product, categories, uploads }: { product:
       </div>
       <fieldset className="rounded-2xl border border-line bg-surface p-4">
         <legend className="px-1 text-sm font-semibold text-ink-2">Colours</legend>
-        <p className="mb-3 text-xs text-ink-3">Optional. Add colours if customers can choose one. Each colour has its own stock (empty = no limit, 0 = sold out). {images.length ? "Tap a photo under a colour to show it when that colour is picked." : "Upload photos below, then you can link a photo to each colour."}</p>
+        <p className="mb-3 text-xs text-ink-3">Optional. Add colours if customers can choose one. Each colour has its own stock (empty = no limit, 0 = sold out) and can cost more (extra price, empty = same price). {images.length ? "Tap a photo under a colour to show it when that colour is picked." : "Upload photos below, then you can link a photo to each colour."}</p>
         {colours.length > 0 && (
           <div className="mb-3 space-y-3">
             {colours.map((c, i) => (
               <div key={i}>
-              <div className="grid grid-cols-[3rem_minmax(0,1fr)_7.5rem_auto] items-center gap-2">
+              <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-2">
                 <input type="color" aria-label="Colour" value={c.hex} onChange={(e) => setColour(i, { hex: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border border-line bg-surface p-1" />
                 <input className="input" placeholder="Colour name" aria-label="Colour name" value={c.name} maxLength={40} onChange={(e) => setColour(i, { name: e.target.value })} />
-                <input className="input" type="number" min="0" step="1" inputMode="numeric" placeholder="No limit" aria-label={`Stock for ${c.name || "this colour"}`} value={c.stock} onChange={(e) => setColour(i, { stock: e.target.value })} />
                 <button type="button" className="px-2 text-sm text-bad" onClick={() => setColours(colours.filter((_, j) => j !== i))}>Remove</button>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 pl-14 text-xs text-ink-3">
+                <label className="flex items-center gap-1.5 whitespace-nowrap">Stock
+                  <input className="input !w-28 py-1.5" type="number" min="0" step="1" inputMode="numeric" placeholder="No limit" aria-label={`Stock for ${c.name || "this colour"}`} value={c.stock} onChange={(e) => setColour(i, { stock: e.target.value })} />
+                </label>
+                <label className="flex items-center gap-1.5 whitespace-nowrap">Extra price $
+                  <input className="input !w-28 py-1.5" type="number" step="0.5" inputMode="decimal" placeholder="0" aria-label={`Extra price for ${c.name || "this colour"}`} value={c.extra} onChange={(e) => setColour(i, { extra: e.target.value })} />
+                </label>
+                {priceWith(c.extra) && <span>{priceWith(c.extra)}</span>}
               </div>
               {images.length > 0 && (
                 <div className="mt-1.5 flex items-center gap-1.5 pl-14">
@@ -143,6 +173,31 @@ export default function ProductForm({ product, categories, uploads }: { product:
             </button>
           ))}
           <button type="button" onClick={() => addColour()} className="rounded-full border border-dashed border-ink-3 px-3 py-1 text-sm">+ Other colour</button>
+        </div>
+      </fieldset>
+
+      <fieldset className="rounded-2xl border border-line bg-surface p-4">
+        <legend className="px-1 text-sm font-semibold text-ink-2">Filament types</legend>
+        <p className="mb-3 text-xs text-ink-3">Optional. Add filament types if customers can choose one. The extra price is added to the price above (empty or 0 = same price, a minus number = cheaper). It adds up with the colour&apos;s extra price.</p>
+        {materials.length > 0 && (
+          <div className="mb-3 space-y-2">
+            {materials.map((m, i) => (
+              <div key={i} className="flex flex-wrap items-center gap-2">
+                <input className="input min-w-0 flex-1 basis-40" placeholder="Filament type, e.g. PETG" aria-label="Filament type" value={m.name} maxLength={40} onChange={(e) => setMaterial(i, { name: e.target.value })} />
+                <label className="flex items-center gap-1.5 whitespace-nowrap text-xs text-ink-3">Extra price $
+                  <input className="input !w-28 py-1.5" type="number" step="0.5" inputMode="decimal" placeholder="0" aria-label={`Extra price for ${m.name || "this filament"}`} value={m.extra} onChange={(e) => setMaterial(i, { extra: e.target.value })} />
+                </label>
+                {priceWith(m.extra) && <span className="text-xs text-ink-3">{priceWith(m.extra)}</span>}
+                <button type="button" className="px-2 text-sm text-bad" onClick={() => setMaterials(materials.filter((_, j) => j !== i))}>Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {FILAMENTS.filter((n) => !materials.some((m) => m.name.toLowerCase() === n.toLowerCase())).map((n) => (
+            <button key={n} type="button" onClick={() => addMaterial(n)} className="rounded-full border border-line px-3 py-1 text-sm hover:border-ink-3">{n}</button>
+          ))}
+          <button type="button" onClick={() => addMaterial()} className="rounded-full border border-dashed border-ink-3 px-3 py-1 text-sm">+ Other type</button>
         </div>
       </fieldset>
 

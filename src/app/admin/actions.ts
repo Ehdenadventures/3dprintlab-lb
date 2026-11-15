@@ -7,8 +7,8 @@ import {
   takeStock, updateOrder, saveBanner, saveHome,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
-import { cleanVariants } from "@/lib/stock";
-import { ORDER_STATUSES, type BannerSettings, type Media, type OrderStatus, type Variant } from "@/lib/types";
+import { cleanMaterials, cleanVariants } from "@/lib/stock";
+import { ORDER_STATUSES, type BannerSettings, type Media, type Material, type OrderStatus, type Variant } from "@/lib/types";
 import { sendToWakilni } from "@/lib/wakilni";
 import type { HomeSettings } from "@/lib/home";
 
@@ -46,6 +46,7 @@ export type ProductInput = {
   sort: number;
   stock: number | null;
   variants: Variant[];
+  materials: Material[];
   media: Media[];
 };
 
@@ -66,7 +67,7 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
     await saveProduct({
       id: p.id, name, slug, description: p.description.trim(), price: Math.round(p.price * 100) / 100,
       category_id: p.category_id || null, active: !!p.active, personalizable: !!p.personalizable,
-      sort: Math.floor(p.sort) || 0, stock, variants: cleanVariants(p.variants), media,
+      sort: Math.floor(p.sort) || 0, stock, variants: cleanVariants(p.variants), materials: cleanMaterials(p.materials), media,
     });
   } catch (e) {
     return { error: (e as Error).message };
