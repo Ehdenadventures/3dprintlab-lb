@@ -1,7 +1,18 @@
 export type Media = { type: "image" | "video"; url: string };
 
 /** A colour of a product. stock null = no limit. */
-export type Variant = { name: string; hex: string; stock: number | null; /** photo shown when this colour is picked */ image?: string };
+export type Variant = {
+  name: string;
+  hex: string;
+  stock: number | null;
+  /** photo shown when this colour is picked */
+  image?: string;
+  /** Added to the product price when this colour is picked (can be negative). Missing = same price. */
+  extra?: number;
+};
+
+/** A filament type the customer can pick (PLA, PETG, Silk PLA...). extra is added to the product price. */
+export type Material = { name: string; extra: number };
 
 /** A picture behind one banner slide. opacity 0-100; x and y 0-100 = which part of the picture stays in view. */
 export type SlideBackground = { image: string; opacity: number; x: number; y: number };
@@ -45,6 +56,8 @@ export type Product = {
   stock: number | null;
   /** Colours, each with its own stock. Empty = the product has no colour choice. */
   variants: Variant[];
+  /** Filament types, each with its own extra price. Empty = no filament choice. */
+  materials: Material[];
   media: Media[];
 };
 
@@ -56,6 +69,8 @@ export type OrderItem = {
   qty: number;
   personalization: string;
   colour?: string;
+  /** Filament type picked by the customer. */
+  material?: string;
 };
 
 /** An Instagram post that customers can shop from the website. */

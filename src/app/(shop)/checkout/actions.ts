@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createOrder, getProductById, OutOfStockError, returnStock, takeStock, updateOrder } from "@/lib/data";
 import { site } from "@/lib/site";
-import { hasColours, stockFor } from "@/lib/stock";
+import { hasColours, stockFor, unitPrice } from "@/lib/stock";
 import type { OrderItem } from "@/lib/types";
 import { sendToWakilni, wakilniAutoSend } from "@/lib/wakilni";
 
@@ -12,7 +12,7 @@ export type CheckoutInput = {
   city: string;
   address: string;
   notes: string;
-  items: { productId: string; qty: number; personalization: string; colour?: string }[];
+  items: { productId: string; qty: number; personalization: string; colour?: string; material?: string }[];
 };
 
 export type CheckoutResult = { ok: true; orderId: string } | { ok: false; error: string };
@@ -43,11 +43,19 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
       colour = p.variants.find((v) => v.name === clean(it.colour, 40))?.name;
       if (!colour) return { ok: false, error: `Please choose a colour for "${p.name}". Remove it from your cart and add it again.` };
     }
+    let material: string | undefined;
+    if (p.materials.length) {
+      material = p.materials.find((m) => m.name === clean(it.material, 40))?.name;
+      if (!material) return { ok: false, error: `Please choose a filament type for "${p.name}". Remove it from your cart and add it again.` };
+    }
     const label = colour ? `${p.name} (${colour})` : p.name;
     const left = stockFor(p, colour);
     if (left === 0) return { ok: false, error: `Sorry, "${label}" is sold out. Please remove it from your cart.` };
     if (left !== null) tracksStock = true;
-    items.push({ product_id: p.id, slug: p.slug, name: p.name, price: p.price, qty, personalization, ...(colour ? { colour } : {}) });
+    items.push({
+      product_id: p.id, slug: p.slug, name: p.name, price: unitPrice(p, colour, material), qty, personalization,
+      ...(colour ? { colour } : {}), ...(material ? { material } : {}),
+    });
   }
   const subtotal = Math.round(items.reduce((a, i) => a + i.price * i.qty, 0) * 100) / 100;
   const delivery_fee = site.deliveryFee;

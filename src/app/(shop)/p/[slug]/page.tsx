@@ -4,10 +4,11 @@ import type { Metadata } from "next";
 import AddToCart from "@/components/AddToCart";
 import ProductCard, { cover } from "@/components/ProductCard";
 import ProductMedia from "@/components/ProductMedia";
+import LivePrice from "@/components/LivePrice";
 import { ColourProvider } from "@/components/ColourContext";
 import { WhatsAppIcon } from "@/components/Icons";
 import { getCategories, getProductBySlug, getProducts } from "@/lib/data";
-import { money, site, whatsappLink } from "@/lib/site";
+import { site, whatsappLink } from "@/lib/site";
 import { isSoldOut } from "@/lib/stock";
 
 export const revalidate = 60;
@@ -36,12 +37,12 @@ export default async function ProductPage({ params }: Props) {
         {parent && <> / <Link href={`/c/${parent.slug}`} className="hover:text-ink">{parent.name}</Link></>}
         {cat && <> / <Link href={`/c/${(parent ?? cat).slug}#${cat.slug}`} className="hover:text-ink">{cat.name}</Link></>}
       </nav>
-      <ColourProvider initial={p.variants.find((v) => v.stock !== 0)?.name ?? ""}>
+      <ColourProvider initial={p.variants.find((v) => v.stock !== 0)?.name ?? ""} initialMaterial={p.materials[0]?.name ?? ""}>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <ProductMedia media={p.media} name={p.name} colourImages={Object.fromEntries(p.variants.filter((v) => v.image).map((v) => [v.name, v.image!]))} />
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">{p.name}</h1>
-          <p className="mt-2 text-2xl font-bold text-accent">{money(p.price)}</p>
+          <LivePrice p={{ price: p.price, variants: p.variants, materials: p.materials }} />
           <p className="mt-4 whitespace-pre-line text-ink-2">{p.description}</p>
           {!p.variants.length && p.stock !== null && p.stock > 0 && p.stock <= 5 && (
             <p className="mt-3 text-sm font-semibold text-[#c44a16] dark:text-pink">Only {p.stock} left</p>
@@ -49,7 +50,7 @@ export default async function ProductPage({ params }: Props) {
           {isSoldOut(p) ? (
             <p className="mt-6 rounded-xl bg-surface-2 px-4 py-3 font-semibold">Sold out for now. Message us on WhatsApp and we can print one for you.</p>
           ) : (
-            <AddToCart productId={p.id} slug={p.slug} name={p.name} price={p.price} image={cover(p)} personalizable={p.personalizable} stock={p.stock} colours={p.variants} />
+            <AddToCart productId={p.id} slug={p.slug} name={p.name} price={p.price} image={cover(p)} personalizable={p.personalizable} stock={p.stock} colours={p.variants} materials={p.materials} />
           )}
           <ul className="mt-6 space-y-1 text-sm text-ink-2">
             <li>• Pay cash on delivery</li>
