@@ -6,7 +6,11 @@ import { getPosts } from "@/lib/data";
 import { site } from "@/lib/site";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "Shop our Instagram", description: `Tap a post to shop the items in it.` };
+export const metadata: Metadata = {
+  title: "Shop our Instagram",
+  description: `Shop the 3D printed items from our Instagram @${site.instagram}. Tap a post to order, cash on delivery all over Lebanon.`,
+  alternates: { canonical: "/ig" },
+};
 
 export default async function InstagramShop() {
   const posts = await getPosts();

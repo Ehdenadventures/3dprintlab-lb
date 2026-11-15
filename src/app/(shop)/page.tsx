@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { priceLabel } from "@/lib/stock";
 import ProductCard, { cover } from "@/components/ProductCard";
 import CategoryBand from "@/components/CategoryBand";
@@ -11,6 +12,7 @@ import { categoryTree, getBanner, getCategories, getHome, getProducts } from "@/
 import { site } from "@/lib/site";
 
 export const revalidate = 60;
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const [cats, products, banner, home] = await Promise.all([getCategories(), getProducts(), getBanner(), getHome()]);
@@ -66,7 +68,7 @@ export default async function Home() {
                   <div className="relative h-28 overflow-hidden bg-[#283189]">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt="" loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105 group-hover:opacity-100" />
+                      <img src={img} alt={c.name} loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-105 group-hover:opacity-100" />
                     ) : (
                       <div className="flex h-full items-center justify-center bg-[repeating-linear-gradient(0deg,rgb(255_255_255/.08)_0_3px,transparent_3px_10px)] text-[#ff8a52]">
                         <CubeIcon className="h-12 w-12" />
@@ -101,6 +103,26 @@ export default async function Home() {
           </section>
         );
       })}
+
+      <section className="mt-16 rounded-3xl border border-line bg-surface p-6 sm:p-8" aria-labelledby="about-3d-printing">
+        <h2 id="about-3d-printing" className="text-2xl font-bold">3D printing in Lebanon</h2>
+        <div className="mt-3 grid gap-6 text-sm text-ink-2 md:grid-cols-3">
+          <p>
+            {site.name} is a 3D printing shop in Zgharta, North Lebanon. We design and 3D print sports gear for armwrestling,
+            cycling, running and the gym, everyday items for home, office and car, and Lebanese souvenirs and gifts. We also take
+            {" "}<Link href="/custom" className="font-semibold text-accent">custom 3D printing orders</Link> from your idea or STL file,
+            and deliver all over Lebanon, from Beirut and Jounieh to Tripoli, Zgharta and Ehden, with cash on delivery.
+          </p>
+          <p lang="ar" dir="rtl" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
+            طباعة ثلاثية الأبعاد في لبنان: معدات رياضية، أغراض للاستعمال اليومي، هدايا وتذكارات لبنانية، وطباعة حسب الطلب.
+            نصمم ونطبع في زغرتا ونوصل إلى كل المناطق اللبنانية مع الدفع عند الاستلام.
+          </p>
+          <p lang="fr">
+            Impression 3D au Liban : accessoires de sport, objets du quotidien, cadeaux et souvenirs libanais, et impressions
+            sur mesure. Conçu et imprimé à Zgharta, livraison partout au Liban, paiement à la livraison.
+          </p>
+        </div>
+      </section>
     </>
   );
 }

@@ -12,6 +12,12 @@ export const site = {
   instagram: "3dprintlab.lb",
   facebook: env("NEXT_PUBLIC_FACEBOOK_URL"),
   tiktok: env("NEXT_PUBLIC_TIKTOK_URL"),
+  // Where the shop is, for Google (keep it the same as your Google Business Profile).
+  address: {
+    street: env("NEXT_PUBLIC_SHOP_STREET", "Main street, Slayib"),
+    locality: env("NEXT_PUBLIC_SHOP_TOWN", "Zgharta"),
+    region: env("NEXT_PUBLIC_SHOP_REGION", "North Governorate"),
+  },
   currency: "USD",
   deliveryFee: Number(env("NEXT_PUBLIC_DELIVERY_FEE_USD", "4")),
 };

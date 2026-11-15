@@ -24,7 +24,7 @@ export default function ProductMedia({ media, name, colourImages = {} }: { media
           <video key={m.url} src={m.url} className="h-full w-full object-cover" autoPlay muted loop playsInline controls />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.url} alt={name} className="h-full w-full object-cover" />
+          <img src={m.url} alt={i === 0 ? name : `${name}, photo ${i + 1}`} fetchPriority={i === start ? "high" : undefined} className="h-full w-full object-cover" />
         )}
       </div>
       {media.length > 1 && (

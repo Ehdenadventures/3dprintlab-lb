@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Media, Product } from "@/lib/types";
 import { extraLabel } from "@/lib/stock";
 import { money } from "@/lib/site";
+import type { SeoText } from "@/lib/seo";
 import { createUploadUrl, deleteProductAction, saveProductAction } from "../../actions";
 
 type Opt = { id: string; label: string };
@@ -20,7 +21,10 @@ const PRESETS: [string, string][] = [
   ["Pink", "#ec6fa8"], ["Gold", "#c9a227"], ["Silver", "#b8bcc2"],
 ];
 
-export default function ProductForm({ product, categories, uploads }: { product: Product | null; categories: Opt[]; uploads: boolean }) {
+export default function ProductForm({ product, categories, uploads, seo, autoSeo }: {
+  product: Product | null; categories: Opt[]; uploads: boolean; seo?: SeoText; autoSeo: SeoText;
+}) {
+  const [google, setGoogle] = useState<SeoText>({ title: seo?.title ?? "", description: seo?.description ?? "" });
   const [f, setF] = useState({
     name: product?.name ?? "",
     slug: product?.slug ?? "",
@@ -102,6 +106,7 @@ export default function ProductForm({ product, categories, uploads }: { product:
         variants: colours.filter((c) => c.name.trim()).map((c) => ({ name: c.name.trim(), hex: c.hex, stock: c.stock.trim() === "" ? null : Number(c.stock), image: media.some((m) => m.url === c.image) ? c.image : undefined, extra: extraNum(c.extra) })),
         materials: materials.filter((m) => m.name.trim()).map((m) => ({ name: m.name.trim(), extra: extraNum(m.extra) })),
         media,
+        seo: google,
       });
       if (res?.error) setError(res.error);
     });
@@ -240,6 +245,20 @@ export default function ProductForm({ product, categories, uploads }: { product:
         <label className="flex items-center gap-2"><input type="checkbox" checked={f.active} onChange={set("active")} className="h-4 w-4 accent-[var(--accent)]" /> Show on the shop</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={f.personalizable} onChange={set("personalizable")} className="h-4 w-4 accent-[var(--accent)]" /> Customer adds a name</label>
       </div>
+      <details className="text-sm" open={!!(seo?.title || seo?.description)}>
+        <summary className="cursor-pointer text-ink-2">Google search (optional)</summary>
+        <p className="mt-2 text-ink-3">Leave empty and the site writes these for you from the name, description and price, with &quot;3D printed in Lebanon&quot;. Type here only to change them.</p>
+        <div className="mt-3 space-y-3">
+          <div className="field">
+            <label htmlFor="seo-title">Title in Google <span className="text-ink-3">({(google.title || autoSeo.title).length}/60)</span></label>
+            <input id="seo-title" className="input" maxLength={120} value={google.title} onChange={(e) => setGoogle({ ...google, title: e.target.value })} placeholder={autoSeo.title} />
+          </div>
+          <div className="field">
+            <label htmlFor="seo-desc">Description in Google <span className="text-ink-3">({(google.description || autoSeo.description).length}/160)</span></label>
+            <textarea id="seo-desc" className="input" rows={3} maxLength={320} value={google.description} onChange={(e) => setGoogle({ ...google, description: e.target.value })} placeholder={autoSeo.description} />
+          </div>
+        </div>
+      </details>
       <details className="text-sm">
         <summary className="cursor-pointer text-ink-2">Advanced</summary>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
