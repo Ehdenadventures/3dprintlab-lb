@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
-  deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
+  deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, deleteOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
   takeStock, updateOrder, saveBanner, saveHome,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
@@ -191,6 +191,15 @@ export async function setOrderStatusAction(fd: FormData) {
   }
   await updateOrder(o.id, { status });
   refreshShop();
+}
+
+export async function deleteOrderAction(fd: FormData) {
+  await requireAdmin();
+  const o = await getOrder(String(fd.get("id")));
+  // Only finished orders can be removed, so stock is never lost by mistake.
+  if (!o || !["cancelled", "delivered"].includes(o.status)) return;
+  await deleteOrder(o.id);
+  revalidatePath("/admin");
 }
 
 export async function sendToWakilniAction(fd: FormData) {
