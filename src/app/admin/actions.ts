@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin, login, logout } from "@/lib/auth";
 import {
-  deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, deleteOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct,
+  deleteCategory, deletePost, deleteProduct, savePost, type PostInput, getOrder, deleteOrder, getProducts, OutOfStockError, returnStock, saveCategory, saveProduct, saveProductSeo, getProductBySlug,
   takeStock, updateOrder, saveBanner, saveHome,
 } from "@/lib/data";
 import { db, MEDIA_BUCKET } from "@/lib/supabase";
@@ -11,6 +11,7 @@ import { cleanMaterials, cleanVariants } from "@/lib/stock";
 import { ORDER_STATUSES, type BannerSettings, type Media, type Material, type OrderStatus, type Variant } from "@/lib/types";
 import { sendToWakilni } from "@/lib/wakilni";
 import type { HomeSettings } from "@/lib/home";
+import type { SeoText } from "@/lib/seo";
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
@@ -48,6 +49,8 @@ export type ProductInput = {
   variants: Variant[];
   materials: Material[];
   media: Media[];
+  /** Google title and description; empty = written automatically. */
+  seo?: SeoText;
 };
 
 export async function saveProductAction(p: ProductInput): Promise<{ error?: string }> {
@@ -69,6 +72,8 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
       category_id: p.category_id || null, active: !!p.active, personalizable: !!p.personalizable,
       sort: Math.floor(p.sort) || 0, stock, variants: cleanVariants(p.variants), materials: cleanMaterials(p.materials), media,
     });
+    const id = p.id ?? (await getProductBySlug(slug, { includeHidden: true }))?.id;
+    if (id && p.seo) await saveProductSeo(id, { title: String(p.seo.title ?? ""), description: String(p.seo.description ?? "") });
   } catch (e) {
     return { error: (e as Error).message };
   }

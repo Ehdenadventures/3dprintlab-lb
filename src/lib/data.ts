@@ -4,6 +4,7 @@ import { db } from "./supabase";
 import { cleanMaterials, cleanVariants } from "./stock";
 import { MAX_BANNER_PRODUCTS } from "./banner";
 import { cleanHome, type HomeSettings } from "./home";
+import { cleanSeo, type SeoText } from "./seo";
 import type { BannerPick, BannerSettings, Category, SlideBackground, Order, OrderItem, OrderStatus, Post, Product } from "./types";
 
 /*
@@ -446,3 +447,19 @@ export type { OrderStatus };
 
 export const getHome = async () => cleanHome(await getSetting("home"));
 export const saveHome = (h: HomeSettings) => saveSetting("home", cleanHome(h));
+
+/** Google title and description typed in admin for each product (by product id). */
+export const getSeo = async () => cleanSeo(await getSetting("seo"));
+export const getProductSeo = async (id: string): Promise<SeoText | undefined> => (await getSeo()).products[id];
+
+/** Saves one product's Google text; empty strings go back to the automatic text. */
+export async function saveProductSeo(id: string, text: SeoText) {
+  const seo = await getSeo();
+  const title = text.title.trim();
+  const description = text.description.trim();
+  if (!title && !description) {
+    if (!seo.products[id]) return;
+    delete seo.products[id];
+  } else seo.products[id] = { title, description };
+  await saveSetting("seo", cleanSeo(seo));
+}

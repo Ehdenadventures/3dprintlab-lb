@@ -7,7 +7,8 @@ import ProductMedia from "@/components/ProductMedia";
 import LivePrice from "@/components/LivePrice";
 import { ColourProvider } from "@/components/ColourContext";
 import { WhatsAppIcon } from "@/components/Icons";
-import { getCategories, getProductBySlug, getProducts } from "@/lib/data";
+import { getCategories, getProductBySlug, getProductSeo, getProducts } from "@/lib/data";
+import { DEFAULT_SHARE_IMAGE, breadcrumbJsonLd, ldJson, productDescription, productJsonLd, productTitle } from "@/lib/seo";
 import { site, whatsappLink } from "@/lib/site";
 import { isSoldOut } from "@/lib/stock";
 
@@ -17,21 +18,39 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await getProductBySlug((await params).slug);
   if (!p) return {};
-  const img = cover(p);
-  return { title: p.name, description: p.description, openGraph: img ? { images: [img] } : undefined };
+  const [cats, seo] = await Promise.all([getCategories(), getProductSeo(p.id)]);
+  const cat = cats.find((c) => c.id === p.category_id);
+  const title = productTitle(p, seo);
+  const description = productDescription(p, cat, seo);
+  const images = p.media.filter((m) => m.type === "image").slice(0, 4).map((m) => ({ url: m.url, alt: p.name }));
+  return {
+    title,
+    description,
+    alternates: { canonical: `/p/${p.slug}` },
+    openGraph: { title, description, url: `/p/${p.slug}`, images: images.length ? images : [DEFAULT_SHARE_IMAGE] },
+  };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const [p, cats, all] = await Promise.all([getProductBySlug(slug), getCategories(), getProducts()]);
   if (!p) notFound();
+  const seo = await getProductSeo(p.id);
   const cat = cats.find((c) => c.id === p.category_id);
   const parent = cat?.parent_id ? cats.find((c) => c.id === cat.parent_id) : null;
   const related = all.filter((x) => x.category_id === p.category_id && x.id !== p.id).slice(0, 4);
   const ask = whatsappLink(`Hi ${site.name}, I have a question about "${p.name}" (${site.url}/p/${p.slug})`);
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    ...(parent ? [{ name: parent.name, path: `/c/${parent.slug}` }] : []),
+    ...(cat ? [{ name: cat.name, path: parent ? `/c/${parent.slug}#${cat.slug}` : `/c/${cat.slug}` }] : []),
+    { name: p.name, path: `/p/${p.slug}` },
+  ];
+
   return (
     <div className="pt-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={ldJson([productJsonLd(p, cat, parent, seo), breadcrumbJsonLd(crumbs)])} />
       <nav className="text-sm text-ink-3" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-ink">Home</Link>
         {parent && <> / <Link href={`/c/${parent.slug}`} className="hover:text-ink">{parent.name}</Link></>}

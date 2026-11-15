@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { site } from "@/lib/site";
+import { DEFAULT_SHARE_IMAGE, HOME_DESCRIPTION, KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: `${site.name} | 3D printed sports gear, gadgets and souvenirs`, template: `%s | ${site.name}` },
-  description: "3D printed sports gear, everyday items and Lebanese souvenirs. Cash on delivery all over Lebanon.",
-  openGraph: { siteName: site.name, type: "website" },
+  title: { default: `3D Printing in Lebanon: Gifts, Sports Gear & Souvenirs | ${site.name}`, template: `%s | ${site.name}` },
+  description: HOME_DESCRIPTION,
+  keywords: KEYWORDS,
+  applicationName: site.name,
+  openGraph: { siteName: site.name, type: "website", locale: "en_US", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image" },
+  formatDetection: { telephone: false },
   // Ownership tags for Google Search Console and Meta (Facebook/Instagram) domain verification.
   // Paste only the code (the content="..." part) into Vercel > Settings > Environment Variables, then redeploy.
   verification: {

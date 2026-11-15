@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { WhatsAppIcon } from "@/components/Icons";
 import { site, whatsappLink } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Custom orders", description: "Have an idea or a 3D file? We design and print it for you." };
+export const metadata: Metadata = {
+  title: "Custom 3D Printing in Lebanon",
+  description: "Custom 3D printing in Lebanon: name keychains, replacement parts, trophies, gifts and prototypes. Send your idea or STL file on WhatsApp and get a price within a day.",
+  alternates: { canonical: "/custom" },
+};
 
 const steps = [
   ["Send your idea", "A photo, a sketch, a broken part, or an STL file. Tell us the size and colour you want."],

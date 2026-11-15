@@ -17,7 +17,12 @@ async function load(params: Props["params"]) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await load(params);
   if (!post) return {};
-  return { title: post.title || "Shop this post", description: post.caption || undefined, openGraph: { images: [post.image] } };
+  return {
+    title: post.title || "Shop this post",
+    description: post.caption ? post.caption.slice(0, 160) : undefined,
+    alternates: { canonical: `/ig/${post.number}` },
+    openGraph: { images: [post.image] },
+  };
 }
 
 export default async function ShopPost({ params }: Props) {

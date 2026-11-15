@@ -3,13 +3,28 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ProductCard from "@/components/ProductCard";
 import { getCategories, getCategoryBySlug, getProducts } from "@/lib/data";
+import { cover } from "@/components/ProductCard";
+import { DEFAULT_SHARE_IMAGE, breadcrumbJsonLd, categoryDescription, categoryJsonLd, categoryTitle, ldJson } from "@/lib/seo";
 
 export const revalidate = 60;
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const c = await getCategoryBySlug((await params).slug);
-  return c ? { title: c.name, description: c.description || undefined } : {};
+  const slug = (await params).slug;
+  const [c, cats, products] = await Promise.all([getCategoryBySlug(slug), getCategories(), getProducts()]);
+  if (!c) return {};
+  const parent = cats.find((x) => x.id === c.parent_id);
+  const subs = cats.filter((x) => x.parent_id === c.id);
+  const ids = new Set([c.id, ...subs.map((s) => s.id)]);
+  const img = products.filter((p) => p.category_id && ids.has(p.category_id)).map(cover).find(Boolean);
+  const title = categoryTitle(c);
+  const description = categoryDescription(c, parent, subs);
+  return {
+    title,
+    description,
+    alternates: { canonical: `/c/${c.slug}` },
+    openGraph: { title, description, url: `/c/${c.slug}`, images: [img ? { url: img, alt: c.name } : DEFAULT_SHARE_IMAGE] },
+  };
 }
 
 export default async function CategoryPage({ params }: Props) {
@@ -23,8 +38,15 @@ export default async function CategoryPage({ params }: Props) {
     ...subs.map((s) => ({ c: s, items: products.filter((p) => p.category_id === s.id) })),
   ].filter((g) => g.items.length);
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    ...(parent ? [{ name: parent.name, path: `/c/${parent.slug}` }] : []),
+    { name: cat.name, path: `/c/${cat.slug}` },
+  ];
+
   return (
     <div className="pt-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={ldJson([categoryJsonLd(cat, groups.flatMap((g) => g.items)), breadcrumbJsonLd(crumbs)])} />
       <nav className="text-sm text-ink-3" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-ink">Home</Link>
         {parent && <> / <Link href={`/c/${parent.slug}`} className="hover:text-ink">{parent.name}</Link></>}
