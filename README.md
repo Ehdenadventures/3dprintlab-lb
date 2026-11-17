@@ -50,6 +50,19 @@ Without Supabase the site uses the starting catalog in `src/lib/seed.json` and k
   press **Send to Wakilni** (or set `WAKILNI_AUTO_SEND=true`).
 - Shop changes show on the site within a minute.
 
+## Email on every new order
+
+Each new order sends an email with the items (colour, filament, name to print), total, payment and the
+customer's name, phone (tap for WhatsApp), area and address.
+
+1. Sign up free at resend.com **with the email address that should get the orders**.
+2. Resend > API Keys > Create API Key (permission: Sending access). Copy the key.
+3. Vercel > Project > Settings > Environment Variables: add `RESEND_API_KEY` (the key) and
+   `ORDER_EMAIL_TO` (that same email address). Redeploy.
+
+Until you verify your own domain in Resend, emails come from `onboarding@resend.dev` and can only go to
+the address you signed up with. If an email fails, the order still goes through.
+
 ## Wakilni integration status
 
 Written from Wakilni's API docs (wiki.wakilni.com/integrations/api.md) but **not yet tested** against
