@@ -1,5 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { sendOrderEmail } from "@/lib/email";
 import { createOrder, getProductById, OutOfStockError, returnStock, takeStock, updateOrder } from "@/lib/data";
 import { site } from "@/lib/site";
 import { hasColours, stockFor, unitPrice } from "@/lib/stock";
@@ -87,6 +89,8 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
         await updateOrder(order.id, { delivery_status: "failed", delivery_error: (e as Error).message });
       }
     }
+    // Email the shop about the new order once the customer has their answer.
+    after(() => sendOrderEmail(order));
     if (tracksStock) revalidatePath("/", "layout");
     return { ok: true, orderId: order.id };
   } catch (e) {
