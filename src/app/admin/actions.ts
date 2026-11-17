@@ -63,9 +63,9 @@ export async function saveProductAction(p: ProductInput): Promise<{ error?: stri
   if (stock !== null && !(stock >= 0)) return { error: "Stock must be 0 or more, or empty for no limit." };
   const clash = (await getProducts({ includeHidden: true })).find((x) => x.slug === slug && x.id !== p.id);
   if (clash) return { error: `Another product already uses the link "${slug}".` };
-  const media = (p.media || [])
-    .filter((m) => m && /^https?:\/\//.test(m.url) && (m.type === "image" || m.type === "video"))
-    .slice(0, 20);
+  const list = (p.media || []).filter((m) => m && /^https?:\/\//.test(m.url) && ["image", "video", "model"].includes(m.type));
+  // Up to 20 photos and videos, plus one 3D file.
+  const media = [...list.filter((m) => m.type !== "model").slice(0, 20), ...list.filter((m) => m.type === "model").slice(0, 1)];
   try {
     await saveProduct({
       id: p.id, name, slug, description: p.description.trim(), price: Math.round(p.price * 100) / 100,
@@ -88,8 +88,8 @@ export async function deleteProductAction(id: string) {
   redirect("/admin/products");
 }
 
-/** Gives the browser a one-time URL to upload a photo or video straight to Supabase Storage. */
-export async function createUploadUrl(fileName: string, folder: "products" | "posts" | "banner" = "products"): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
+/** Gives the browser a one-time URL to upload a photo, video or 3D file straight to Supabase Storage. */
+export async function createUploadUrl(fileName: string, folder: "products" | "posts" | "banner" | "models" = "products"): Promise<{ uploadUrl: string; publicUrl: string } | { error: string }> {
   await requireAdmin();
   const s = db();
   if (!s) return { error: "Uploads need Supabase. Paste an image URL instead, or connect Supabase." };
