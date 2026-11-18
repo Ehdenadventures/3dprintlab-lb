@@ -48,7 +48,10 @@ export default async function ProductsAdmin() {
                       : p.stock === 0 ? <span className="font-semibold text-bad">Sold out</span>
                       : <span className={p.stock <= 3 ? "font-semibold text-[#c44a16] dark:text-pink" : ""}>{p.stock}</span>}
                   </td>
-                  <td className="p-3 text-ink-2">{p.media.length || <span className="text-bad">none</span>}</td>
+                  <td className="p-3 text-ink-2">
+                    {p.media.filter((m) => m.type !== "model").length || <span className="text-bad">none</span>}
+                    {p.media.some((m) => m.type === "model") && <span className="ml-1.5 rounded bg-accent-soft px-1.5 py-0.5 text-xs font-semibold text-accent">3D</span>}
+                  </td>
                   <td className="p-3">{p.active ? "Live" : <span className="text-ink-3">Hidden</span>}</td>
                 </tr>
               ))}

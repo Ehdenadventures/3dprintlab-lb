@@ -1,4 +1,5 @@
-export type Media = { type: "image" | "video"; url: string };
+/** A product photo, a video, or a 3D file (STL, 3MF, OBJ or GLB) shown in the 3D viewer. */
+export type Media = { type: "image" | "video" | "model"; url: string };
 
 /** A colour of a product. stock null = no limit. */
 export type Variant = {

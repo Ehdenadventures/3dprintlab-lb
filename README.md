@@ -99,3 +99,11 @@ story link stickers.
 - **Meta domain verification:** in Business Settings > Brand safety > Domains, add `3dprintlab-lb.com`. Use
   the DNS TXT option, or the **Meta-tag** option with the code in Vercel as `FACEBOOK_DOMAIN_VERIFICATION`
   (then redeploy).
+
+## 3D view
+
+In admin > product > **3D view**, upload the STL (or 3MF, OBJ, GLB) you print from. The product page then
+shows a **View in 3D** button and a 3D thumbnail: customers drag to turn and pinch to zoom, and the
+model takes the colour they pick. Products with a 3D file get a **3D** badge on their card. If a
+product has no photos, its page opens straight on the 3D view. three.js is downloaded only when the
+3D view opens, so pages stay fast. Keep files under about 10 MB for phones. No database change needed.

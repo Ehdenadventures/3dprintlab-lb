@@ -58,7 +58,7 @@ export default async function ProductPage({ params }: Props) {
       </nav>
       <ColourProvider initial={p.variants.find((v) => v.stock !== 0)?.name ?? ""} initialMaterial={p.materials[0]?.name ?? ""}>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
-        <ProductMedia media={p.media} name={p.name} colourImages={Object.fromEntries(p.variants.filter((v) => v.image).map((v) => [v.name, v.image!]))} />
+        <ProductMedia media={p.media} name={p.name} colourImages={Object.fromEntries(p.variants.filter((v) => v.image).map((v) => [v.name, v.image!]))} colourHex={Object.fromEntries(p.variants.map((v) => [v.name, v.hex]))} />
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">{p.name}</h1>
           <LivePrice p={{ price: p.price, variants: p.variants, materials: p.materials }} />

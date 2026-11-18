@@ -20,9 +20,14 @@ export default function ProductCard({ p }: { p: Product }) {
             <CubeIcon />
           </div>
         )}
-        {isSoldOut(p) && (
-          <span className="absolute right-2 top-2 rounded-full bg-ink px-2 py-0.5 text-xs font-semibold text-bg">Sold out</span>
-        )}
+        <div className="absolute right-2 top-2 flex flex-col items-end gap-1">
+          {isSoldOut(p) && <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-semibold text-bg">Sold out</span>}
+          {p.media.some((m) => m.type === "model") && (
+            <span className="flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-ink shadow-sm" title="Turn it in 3D on the product page">
+              <CubeIcon className="h-3.5 w-3.5" /> 3D
+            </span>
+          )}
+        </div>
         {p.personalizable && (
           <span className="absolute left-2 top-2 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-semibold">Personalised</span>
         )}

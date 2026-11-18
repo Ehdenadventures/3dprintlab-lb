@@ -6,6 +6,7 @@ import { extraLabel } from "@/lib/stock";
 import { money } from "@/lib/site";
 import type { SeoText } from "@/lib/seo";
 import { createUploadUrl, deleteProductAction, saveProductAction } from "../../actions";
+import ModelViewer, { MODEL_ACCEPT, MODEL_EXT } from "@/components/ModelViewer";
 
 type Opt = { id: string; label: string };
 type ColourRow = { name: string; hex: string; stock: string; image: string; extra: string };
@@ -36,7 +37,9 @@ export default function ProductForm({ product, categories, uploads, seo, autoSeo
     sort: String(product?.sort ?? 0),
     stock: product?.stock == null ? "" : String(product.stock),
   });
-  const [media, setMedia] = useState<Media[]>(product?.media ?? []);
+  const [media, setMedia] = useState<Media[]>((product?.media ?? []).filter((m) => m.type !== "model"));
+  const [model, setModel] = useState(product?.media.find((m) => m.type === "model")?.url ?? "");
+  const [modelUrl, setModelUrl] = useState("");
   const [colours, setColours] = useState<ColourRow[]>(
     (product?.variants ?? []).map((v) => ({ name: v.name, hex: v.hex, stock: v.stock == null ? "" : String(v.stock), image: v.image ?? "", extra: extraText(v.extra) })),
   );
@@ -68,21 +71,38 @@ export default function ProductForm({ product, categories, uploads, seo, autoSeo
   const kindOf = (name: string, mime = ""): Media["type"] =>
     mime.startsWith("video") || /\.(mp4|webm|mov|m4v)$/i.test(name) ? "video" : "image";
 
+  /** Uploads one file to Supabase Storage and returns its public link, or null (error shown). */
+  async function uploadOne(file: File, folder: "products" | "models" = "products") {
+    if (file.size > 50 * 1024 * 1024) { setError(`${file.name} is over 50 MB.`); return null; }
+    setBusy(`Uploading ${file.name}...`);
+    const res = await createUploadUrl(file.name, folder);
+    if ("error" in res) { setError(res.error); return null; }
+    const body = new FormData();
+    body.append("cacheControl", "31536000");
+    body.append("", file);
+    const put = await fetch(res.uploadUrl, { method: "PUT", body, headers: { "x-upsert": "false" } });
+    if (!put.ok) { setError(`Upload failed for ${file.name} (${put.status}).`); return null; }
+    return res.publicUrl;
+  }
+
   async function upload(files: FileList | null) {
     if (!files) return;
     setError("");
     for (const file of Array.from(files)) {
-      if (file.size > 50 * 1024 * 1024) { setError(`${file.name} is over 50 MB.`); continue; }
-      setBusy(`Uploading ${file.name}...`);
-      const res = await createUploadUrl(file.name);
-      if ("error" in res) { setError(res.error); break; }
-      const body = new FormData();
-      body.append("cacheControl", "31536000");
-      body.append("", file);
-      const put = await fetch(res.uploadUrl, { method: "PUT", body, headers: { "x-upsert": "false" } });
-      if (!put.ok) { setError(`Upload failed for ${file.name} (${put.status}).`); break; }
-      setMedia((m) => [...m, { type: kindOf(file.name, file.type), url: res.publicUrl }]);
+      const url = await uploadOne(file);
+      if (!url) break;
+      setMedia((m) => [...m, { type: kindOf(file.name, file.type), url }]);
     }
+    setBusy("");
+  }
+
+  async function uploadModel(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setError("");
+    if (!MODEL_EXT.test(file.name)) { setError("The 3D file must be STL, 3MF, OBJ or GLB."); return; }
+    const url = await uploadOne(file, "models");
+    if (url) setModel(url);
     setBusy("");
   }
 
@@ -105,7 +125,7 @@ export default function ProductForm({ product, categories, uploads, seo, autoSeo
         stock: colours.length || f.stock.trim() === "" ? null : Number(f.stock),
         variants: colours.filter((c) => c.name.trim()).map((c) => ({ name: c.name.trim(), hex: c.hex, stock: c.stock.trim() === "" ? null : Number(c.stock), image: media.some((m) => m.url === c.image) ? c.image : undefined, extra: extraNum(c.extra) })),
         materials: materials.filter((m) => m.name.trim()).map((m) => ({ name: m.name.trim(), extra: extraNum(m.extra) })),
-        media,
+        media: model ? [...media, { type: "model", url: model }] : media,
         seo: google,
       });
       if (res?.error) setError(res.error);
@@ -239,6 +259,36 @@ export default function ProductForm({ product, categories, uploads, seo, autoSeo
           <button type="button" className="btn" onClick={() => { if (/^https?:\/\//.test(url)) { setMedia([...media, { type: kindOf(url), url }]); setUrl(""); } }}>Add URL</button>
         </div>
         {busy && <p className="mt-2 text-sm text-ink-2">{busy}</p>}
+      </fieldset>
+
+      <fieldset className="rounded-2xl border border-line bg-surface p-4">
+        <legend className="px-1 text-sm font-semibold text-ink-2">3D view</legend>
+        <p className="mb-3 text-xs text-ink-3">Optional. Upload the STL (or 3MF, OBJ, GLB) you print from, and customers can turn and zoom the item on its page. It shows in the colour they pick. Best under 10 MB so it opens fast on phones.</p>
+        {model ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <div className="aspect-square w-full max-w-64 overflow-hidden rounded-xl border border-line bg-surface-2">
+              <ModelViewer url={model} name={f.name || "Product"} colour={colours.find((c) => c.name.trim())?.hex} />
+            </div>
+            <div className="flex flex-col gap-2 text-sm">
+              <span className="break-all text-ink-3">{decodeURIComponent(model.split("/").pop() ?? "")}</span>
+              <button type="button" className="btn text-bad" onClick={() => setModel("")}>Remove 3D file</button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {uploads && (
+              <label className="btn cursor-pointer">
+                Upload 3D file
+                <input type="file" accept={MODEL_ACCEPT} className="hidden" onChange={(e) => uploadModel(e.target.files)} />
+              </label>
+            )}
+            <input className="input flex-1" placeholder="...or paste a link to an .stl / .3mf / .glb file" value={modelUrl} onChange={(e) => setModelUrl(e.target.value)} />
+            <button type="button" className="btn" onClick={() => {
+              if (!/^https?:\/\//.test(modelUrl) || !MODEL_EXT.test(modelUrl)) { setError("Paste a link that ends in .stl, .3mf, .obj or .glb."); return; }
+              setError(""); setModel(modelUrl); setModelUrl("");
+            }}>Add link</button>
+          </div>
+        )}
       </fieldset>
 
       <div className="flex flex-wrap gap-6">
